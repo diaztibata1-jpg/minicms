@@ -1,0 +1,36 @@
+---
+import { Image } from 'astro:assets';
+
+interface Props {
+  contenido: {
+    hero_titulo: string;
+    hero_texto: string;
+    hero_boton: string;
+    hero_imagen: ImageMetadata;
+    whatsapp: string;
+    negocio_nombre: string;
+  };
+}
+
+const { contenido } = Astro.props;
+---
+
+<section class="hero" aria-labelledby="titulo-principal">
+  <div class="hero__contenido">
+    <p class="hero__etiqueta" data-campo="negocio_nombre">{contenido.negocio_nombre}</p>
+    <h1 id="titulo-principal" data-campo="hero_titulo">{contenido.hero_titulo}</h1>
+    <p class="hero__texto" data-campo="hero_texto">{contenido.hero_texto}</p>
+    <a class="boton boton--oscuro" href={`https://wa.me/${contenido.whatsapp}`}>
+      <span data-campo="hero_boton">{contenido.hero_boton}</span>
+    </a>
+  </div>
+  <div class="hero__imagen imagen-editable">
+    <Image
+      src={contenido.hero_imagen}
+      alt={contenido.hero_titulo}
+      widths={[600, 900, 1200]}
+      sizes="(max-width: 800px) 100vw, 52vw"
+      data-campo-imagen="hero_imagen"
+    />
+  </div>
+</section>

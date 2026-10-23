@@ -1,0 +1,40 @@
+---
+import { Image } from 'astro:assets';
+
+interface Servicio {
+  titulo: string;
+  descripcion: string;
+  imagen: ImageMetadata;
+}
+
+interface Props {
+  titulo: string;
+  servicios: Servicio[];
+}
+
+const { titulo, servicios } = Astro.props;
+---
+
+<section class="servicios" aria-labelledby="titulo-servicios">
+  <div class="seccion__encabezado">
+    <span class="seccion__numero">01 / 03</span>
+    <h2 id="titulo-servicios" data-campo="servicios_titulo">{titulo}</h2>
+  </div>
+  <div class="servicios__rejilla">
+    {servicios.map((servicio, indice) => (
+      <article class="servicio">
+        <div class="servicio__imagen imagen-editable">
+          <Image
+            src={servicio.imagen}
+            alt={servicio.titulo}
+            widths={[420, 700]}
+            sizes="(max-width: 700px) 90vw, 30vw"
+            data-campo-imagen={`servicios.${indice}.imagen`}
+          />
+        </div>
+        <h3 data-campo={`servicios.${indice}.titulo`}>{servicio.titulo}</h3>
+        <p data-campo={`servicios.${indice}.descripcion`}>{servicio.descripcion}</p>
+      </article>
+    ))}
+  </div>
+</section>

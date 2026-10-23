@@ -1,6 +1,6 @@
 ---
 negocio_nombre: Panadería La Espiga
-hero_titulo: 'El aromá del pan recién hecho, cada mañana'
+hero_titulo: 'El aroma del pan recién hecho, cada mañana'
 hero_texto: >-
   Elaboramos panes, bollería y pasteles con ingredientes locales y el cuidado de
   siempre.

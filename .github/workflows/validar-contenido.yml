@@ -1,0 +1,194 @@
+name: Validar contenido
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  validar:
+    name: validar-contenido
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar repositorio
+        id: checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configurar Node.js 22
+        id: setup_node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Limitar archivos del pull request
+        id: archivos
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          fuera_de_alcance=()
+          while IFS= read -r archivo; do
+            [[ -z "$archivo" ]] && continue
+            if [[ "$archivo" != src/content/* && "$archivo" != src/assets/editor/* ]]; then
+              fuera_de_alcance+=("$archivo")
+            fi
+          done < <(git diff --name-only "$BASE_SHA...$HEAD_SHA")
+          if (( ${#fuera_de_alcance[@]} > 0 )); then
+            {
+              echo '## ❌ Archivos no permitidos'
+              echo 'El pull request solo puede cambiar archivos de `src/content/` y `src/assets/editor/`.'
+              printf -- '- `%s`\n' "${fuera_de_alcance[@]}"
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          echo '## ✅ Archivos permitidos' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Todos los cambios están dentro de `src/content/` y `src/assets/editor/`.' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Rechazar HTML en el contenido
+        id: html
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          errores=()
+          while IFS= read -r archivo; do
+            [[ "$archivo" == *.md && -f "$archivo" ]] || continue
+            if coincidencias=$(grep -niE '<[[:alpha:]][^>]*>' "$archivo"); then
+              errores+=("$archivo: $coincidencias")
+            fi
+          done < <(git diff --name-only "$BASE_SHA...$HEAD_SHA" -- src/content/)
+          if (( ${#errores[@]} > 0 )); then
+            {
+              echo '## ❌ Se encontró HTML en el contenido'
+              echo 'Usa únicamente texto plano en los archivos Markdown.'
+              printf -- '- `%s`\n' "${errores[@]}"
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          echo '## ✅ Contenido sin HTML' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Los archivos Markdown modificados no contienen etiquetas HTML.' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Validar imágenes nuevas
+        id: imagenes
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          errores=()
+          while IFS= read -r archivo; do
+            [[ -z "$archivo" ]] && continue
+            if [[ "$archivo" != *.webp ]]; then
+              errores+=("$archivo: las imágenes nuevas deben estar en formato WebP.")
+            elif [[ -f "$archivo" ]]; then
+              tipo=$(file --brief --mime-type "$archivo")
+              if [[ "$tipo" != image/webp ]]; then
+                errores+=("$archivo: el contenido real no es una imagen WebP válida.")
+              fi
+              bytes=$(wc -c < "$archivo")
+              if (( bytes > 409600 )); then
+                errores+=("$archivo: pesa $bytes bytes; el máximo permitido es 409600 bytes (400 KB).")
+              fi
+            fi
+          done < <(git diff --name-only --diff-filter=A "$BASE_SHA...$HEAD_SHA" -- src/assets/editor/)
+          if (( ${#errores[@]} > 0 )); then
+            {
+              echo '## ❌ Imágenes no válidas'
+              printf -- '- %s\n' "${errores[@]}"
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          echo '## ✅ Imágenes nuevas válidas' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Todas las imágenes nuevas son WebP y pesan como máximo 400 KB.' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Instalar dependencias
+        id: instalar
+        run: |
+          if npm ci; then
+            echo '## ✅ Dependencias instaladas' >> "$GITHUB_STEP_SUMMARY"
+            echo '`npm ci` terminó correctamente.' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo '## ❌ No se pudieron instalar las dependencias' >> "$GITHUB_STEP_SUMMARY"
+            echo 'Revisa que `package-lock.json` esté actualizado y que las dependencias sean válidas.' >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
+      - name: Comprobar tipos y contenido Astro
+        id: check
+        run: |
+          if npx astro check; then
+            echo '## ✅ Comprobación Astro' >> "$GITHUB_STEP_SUMMARY"
+            echo '`astro check` terminó correctamente.' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo '## ❌ Falló la comprobación Astro' >> "$GITHUB_STEP_SUMMARY"
+            echo 'Revisa los tipos y el contenido requerido por el esquema.' >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
+      - name: Compilar sitio estático
+        id: build
+        run: |
+          if npm run build; then
+            echo '## ✅ Compilación estática' >> "$GITHUB_STEP_SUMMARY"
+            echo '`npm run build` terminó correctamente.' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo '## ❌ Falló la compilación estática' >> "$GITHUB_STEP_SUMMARY"
+            echo 'Revisa el esquema, las imágenes y la compilación de Astro.' >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
+      - name: Activar fusión automática
+        id: auto_merge
+        if: startsWith(github.event.pull_request.head.ref, 'cambios/')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          if gh pr merge --auto --squash "$PR_URL"; then
+            echo '## ✅ Fusión automática activada' >> "$GITHUB_STEP_SUMMARY"
+            echo 'El pull request se fusionará al completar todos los checks y protecciones de `main`.' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo '## ❌ No se pudo activar la fusión automática' >> "$GITHUB_STEP_SUMMARY"
+            echo 'Comprueba que Allow auto-merge esté habilitado y que el token tenga permisos.' >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
+      - name: Resumir pasos fallidos
+        if: always()
+        env:
+          CHECKOUT_RESULTADO: ${{ steps.checkout.outcome }}
+          NODE_RESULTADO: ${{ steps.setup_node.outcome }}
+          ARCHIVOS_RESULTADO: ${{ steps.archivos.outcome }}
+          HTML_RESULTADO: ${{ steps.html.outcome }}
+          IMAGENES_RESULTADO: ${{ steps.imagenes.outcome }}
+          INSTALAR_RESULTADO: ${{ steps.instalar.outcome }}
+          CHECK_RESULTADO: ${{ steps.check.outcome }}
+          BUILD_RESULTADO: ${{ steps.build.outcome }}
+          MERGE_RESULTADO: ${{ steps.auto_merge.outcome }}
+        run: |
+          fallidos=()
+          [[ "$CHECKOUT_RESULTADO" == failure ]] && fallidos+=("Descargar repositorio")
+          [[ "$NODE_RESULTADO" == failure ]] && fallidos+=("Configurar Node.js 22")
+          [[ "$ARCHIVOS_RESULTADO" == failure ]] && fallidos+=("Limitar archivos del pull request")
+          [[ "$HTML_RESULTADO" == failure ]] && fallidos+=("Rechazar HTML en el contenido")
+          [[ "$IMAGENES_RESULTADO" == failure ]] && fallidos+=("Validar imágenes nuevas")
+          [[ "$INSTALAR_RESULTADO" == failure ]] && fallidos+=("Instalar dependencias")
+          [[ "$CHECK_RESULTADO" == failure ]] && fallidos+=("Comprobar tipos y contenido Astro")
+          [[ "$BUILD_RESULTADO" == failure ]] && fallidos+=("Compilar sitio estático")
+          [[ "$MERGE_RESULTADO" == failure ]] && fallidos+=("Activar fusión automática")
+          if (( ${#fallidos[@]} > 0 )); then
+            {
+              echo '## ❌ Pasos que fallaron'
+              printf -- '- %s\n' "${fallidos[@]}"
+              echo 'Consulta el registro del paso para ver el detalle y cómo corregirlo.'
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo '## ✅ Todos los pasos completados' >> "$GITHUB_STEP_SUMMARY"
+          fi

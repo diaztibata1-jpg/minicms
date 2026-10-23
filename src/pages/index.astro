@@ -1,0 +1,48 @@
+---
+import { getCollection } from 'astro:content';
+import Contacto from '../components/Contacto.astro';
+import Hero from '../components/Hero.astro';
+import Servicios from '../components/Servicios.astro';
+import '../styles/global.css';
+import Editor from '../components/Editor.astro';
+
+const [pagina] = await getCollection('paginas');
+const contenido = pagina.data;
+const modoEdicion = import.meta.env.DEV && process.env.EDITOR === '1';
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={contenido.hero_texto} />
+    <title>{contenido.negocio_nombre}</title>
+  </head>
+  <body>
+    <header class="cabecera">
+      <a class="marca" href="#inicio" data-campo="negocio_nombre">{contenido.negocio_nombre}</a>
+      <a class="cabecera__enlace" href="#contacto">Contacto <span aria-hidden="true">↗</span></a>
+    </header>
+    <main>
+      <div id="inicio">
+        <Hero contenido={contenido} />
+      </div>
+      <Servicios titulo={contenido.servicios_titulo} servicios={contenido.servicios} />
+      <div id="contacto">
+        <Contacto
+          titulo={contenido.contacto_titulo}
+          texto={contenido.contacto_texto}
+          whatsapp={contenido.whatsapp}
+          direccion={contenido.direccion}
+          horario={contenido.horario}
+        />
+      </div>
+    </main>
+    <footer class="pie">
+      <span data-campo="negocio_nombre">{contenido.negocio_nombre}</span>
+      <span data-campo="direccion">{contenido.direccion}</span>
+    </footer>
+    {modoEdicion && <Editor />}
+  </body>
+</html>

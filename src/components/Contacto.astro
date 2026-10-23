@@ -1,0 +1,33 @@
+---
+interface Props {
+  titulo: string;
+  texto: string;
+  whatsapp: string;
+  direccion: string;
+  horario: string;
+}
+
+const { titulo, texto, whatsapp, direccion, horario } = Astro.props;
+---
+
+<section class="contacto" aria-labelledby="titulo-contacto">
+  <div class="contacto__intro">
+    <span class="seccion__numero">02 / 03</span>
+    <h2 id="titulo-contacto" data-campo="contacto_titulo">{titulo}</h2>
+    <p data-campo="contacto_texto">{texto}</p>
+  </div>
+  <div class="contacto__datos">
+    <a class="contacto__whatsapp" href={`https://wa.me/${whatsapp}`}>
+      <span>WhatsApp</span>
+      <strong data-campo="whatsapp">{whatsapp}</strong>
+    </a>
+    <div>
+      <span>Dirección</span>
+      <p data-campo="direccion">{direccion}</p>
+    </div>
+    <div>
+      <span>Horario</span>
+      <p data-campo="horario">{horario}</p>
+    </div>
+  </div>
+</section>

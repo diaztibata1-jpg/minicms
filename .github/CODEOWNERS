@@ -1,7 +1,7 @@
 # Todo el repositorio necesita la aprobación del equipo, incluido este archivo y los workflows.
 # Con la regla "Require review from Code Owners" en main, un pull request que toque
 # cualquier archivo fuera del contenido no se puede fusionar sin esa aprobación.
-* @sdtibata
+* @diaztibata1-jpg
 
 # El contenido del cliente no tiene dueño: estos pull requests se fusionan solos si pasan la validación.
 /src/content/paginas/

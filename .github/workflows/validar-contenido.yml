@@ -20,11 +20,11 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Configurar Node.js 22
+      - name: Configurar Node.js
         id: setup_node
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version-file: .node-version
 
       - name: Limitar archivos del pull request
         id: archivos
@@ -159,7 +159,7 @@ jobs:
         run: |
           fallidos=()
           [[ "$CHECKOUT_RESULTADO" == failure ]] && fallidos+=("Descargar repositorio")
-          [[ "$NODE_RESULTADO" == failure ]] && fallidos+=("Configurar Node.js 22")
+          [[ "$NODE_RESULTADO" == failure ]] && fallidos+=("Configurar Node.js")
           [[ "$ARCHIVOS_RESULTADO" == failure ]] && fallidos+=("Limitar archivos del pull request")
           [[ "$HTML_RESULTADO" == failure ]] && fallidos+=("Rechazar HTML en el contenido")
           [[ "$IMAGENES_RESULTADO" == failure ]] && fallidos+=("Validar imágenes nuevas")

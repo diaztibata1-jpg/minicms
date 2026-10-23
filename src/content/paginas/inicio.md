@@ -30,6 +30,6 @@ contacto_texto: >-
   para reservar.
 whatsapp: '573001234567'
 direccion: 'Calle 12 # 8-45, barrio San Miguel, Bogotá'
-horario: 'Lunes a sábado, de 6:00 a. m. a 7:00 p. m.'
+horario: 'Lunes a sábado, de 6:00 a. m. a 8:00 p. m.'
 ---
 

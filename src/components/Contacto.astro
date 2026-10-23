@@ -8,6 +8,7 @@ interface Props {
 }
 
 const { titulo, texto, whatsapp, direccion, horario } = Astro.props;
+const whatsappVisible = `+57 ${whatsapp.slice(2, 5)} ${whatsapp.slice(5, 8)} ${whatsapp.slice(8)}`;
 ---
 
 <section class="contacto" aria-labelledby="titulo-contacto">
@@ -19,7 +20,7 @@ const { titulo, texto, whatsapp, direccion, horario } = Astro.props;
   <div class="contacto__datos">
     <a class="contacto__whatsapp" href={`https://wa.me/${whatsapp}`}>
       <span>WhatsApp</span>
-      <strong data-campo="whatsapp">{whatsapp}</strong>
+      <strong data-whatsapp-visible>{whatsappVisible}</strong>
     </a>
     <div>
       <span>Dirección</span>

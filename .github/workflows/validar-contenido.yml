@@ -4,9 +4,9 @@ on:
   pull_request:
     branches: [main]
 
+# Por defecto solo lectura. Únicamente el job de fusión recibe permiso de escritura.
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 jobs:
   validar:
@@ -18,6 +18,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Configurar Node.js 22
         id: setup_node
@@ -35,20 +36,20 @@ jobs:
           fuera_de_alcance=()
           while IFS= read -r archivo; do
             [[ -z "$archivo" ]] && continue
-            if [[ "$archivo" != src/content/* && "$archivo" != src/assets/editor/* ]]; then
+            if [[ ! "$archivo" =~ ^src/content/paginas/[^/]+\.md$ && ! "$archivo" =~ ^src/assets/editor/[a-z0-9-]+\.webp$ ]]; then
               fuera_de_alcance+=("$archivo")
             fi
           done < <(git diff --name-only "$BASE_SHA...$HEAD_SHA")
           if (( ${#fuera_de_alcance[@]} > 0 )); then
             {
               echo '## ❌ Archivos no permitidos'
-              echo 'El pull request solo puede cambiar archivos de `src/content/` y `src/assets/editor/`.'
+              echo 'El pull request solo puede cambiar archivos `.md` de `src/content/paginas/` e imágenes `.webp` de `src/assets/editor/`.'
               printf -- '- `%s`\n' "${fuera_de_alcance[@]}"
             } >> "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
           echo '## ✅ Archivos permitidos' >> "$GITHUB_STEP_SUMMARY"
-          echo 'Todos los cambios están dentro de `src/content/` y `src/assets/editor/`.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Todos los cambios son contenido de `src/content/paginas/` o imágenes de `src/assets/editor/`.' >> "$GITHUB_STEP_SUMMARY"
 
       - name: Rechazar HTML en el contenido
         id: html
@@ -97,7 +98,7 @@ jobs:
                 errores+=("$archivo: pesa $bytes bytes; el máximo permitido es 409600 bytes (400 KB).")
               fi
             fi
-          done < <(git diff --name-only --diff-filter=A "$BASE_SHA...$HEAD_SHA" -- src/assets/editor/)
+          done < <(git diff --name-only --diff-filter=AM "$BASE_SHA...$HEAD_SHA" -- src/assets/editor/)
           if (( ${#errores[@]} > 0 )); then
             {
               echo '## ❌ Imágenes no válidas'
@@ -106,7 +107,7 @@ jobs:
             exit 1
           fi
           echo '## ✅ Imágenes nuevas válidas' >> "$GITHUB_STEP_SUMMARY"
-          echo 'Todas las imágenes nuevas son WebP y pesan como máximo 400 KB.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Todas las imágenes nuevas o reemplazadas son WebP y pesan como máximo 400 KB.' >> "$GITHUB_STEP_SUMMARY"
 
       - name: Instalar dependencias
         id: instalar
@@ -144,22 +145,6 @@ jobs:
             exit 1
           fi
 
-      - name: Activar fusión automática
-        id: auto_merge
-        if: startsWith(github.event.pull_request.head.ref, 'cambios/')
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_URL: ${{ github.event.pull_request.html_url }}
-        run: |
-          if gh pr merge --auto --squash "$PR_URL"; then
-            echo '## ✅ Fusión automática activada' >> "$GITHUB_STEP_SUMMARY"
-            echo 'El pull request se fusionará al completar todos los checks y protecciones de `main`.' >> "$GITHUB_STEP_SUMMARY"
-          else
-            echo '## ❌ No se pudo activar la fusión automática' >> "$GITHUB_STEP_SUMMARY"
-            echo 'Comprueba que Allow auto-merge esté habilitado y que el token tenga permisos.' >> "$GITHUB_STEP_SUMMARY"
-            exit 1
-          fi
-
       - name: Resumir pasos fallidos
         if: always()
         env:
@@ -171,7 +156,6 @@ jobs:
           INSTALAR_RESULTADO: ${{ steps.instalar.outcome }}
           CHECK_RESULTADO: ${{ steps.check.outcome }}
           BUILD_RESULTADO: ${{ steps.build.outcome }}
-          MERGE_RESULTADO: ${{ steps.auto_merge.outcome }}
         run: |
           fallidos=()
           [[ "$CHECKOUT_RESULTADO" == failure ]] && fallidos+=("Descargar repositorio")
@@ -182,7 +166,6 @@ jobs:
           [[ "$INSTALAR_RESULTADO" == failure ]] && fallidos+=("Instalar dependencias")
           [[ "$CHECK_RESULTADO" == failure ]] && fallidos+=("Comprobar tipos y contenido Astro")
           [[ "$BUILD_RESULTADO" == failure ]] && fallidos+=("Compilar sitio estático")
-          [[ "$MERGE_RESULTADO" == failure ]] && fallidos+=("Activar fusión automática")
           if (( ${#fallidos[@]} > 0 )); then
             {
               echo '## ❌ Pasos que fallaron'
@@ -191,4 +174,27 @@ jobs:
             } >> "$GITHUB_STEP_SUMMARY"
           else
             echo '## ✅ Todos los pasos completados' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  fusionar:
+    name: fusion-automatica
+    needs: validar
+    if: startsWith(github.event.pull_request.head.ref, 'cambios/') && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Activar fusión automática
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          if gh pr merge --auto --squash --delete-branch "$PR_URL"; then
+            echo '## ✅ Fusión automática activada' >> "$GITHUB_STEP_SUMMARY"
+            echo 'El pull request se fusionará cuando se cumplan las protecciones de `main`.' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo '## ❌ No se pudo activar la fusión automática' >> "$GITHUB_STEP_SUMMARY"
+            echo 'Comprueba que **Allow auto-merge** esté activado en Settings y que `main` tenga un ruleset que exija el check `validar-contenido`.' >> "$GITHUB_STEP_SUMMARY"
+            exit 1
           fi

@@ -9,7 +9,7 @@ import sanitizeHtml from 'sanitize-html';
 import sharp from 'sharp';
 import { z } from 'zod';
 import type { AstroIntegration } from 'astro';
-import { camposImagen, crearEsquemaPagina, limitesCampos } from '../src/content/esquema';
+import { camposImagen, crearEsquemaPagina, limitesCampos } from '../src/esquema/contenido';
 
 const execFile = promisify(execFileCallback);
 const limiteSubida = 10 * 1024 * 1024;
@@ -275,13 +275,22 @@ export default function editorIntegration(): AstroIntegration {
                   throw new Error('Hay cambios preparados fuera del editor. Confírmalos antes de enviar el contenido.');
                 }
                 const ahora = new Date();
-                const parteFecha = `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, '0')}-${String(ahora.getDate()).padStart(2, '0')}-${String(ahora.getHours()).padStart(2, '0')}${String(ahora.getMinutes()).padStart(2, '0')}`;
+                const parteFecha = `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, '0')}-${String(ahora.getDate()).padStart(2, '0')}-${String(ahora.getHours()).padStart(2, '0')}${String(ahora.getMinutes()).padStart(2, '0')}${String(ahora.getSeconds()).padStart(2, '0')}`;
                 const rama = `cambios/${parteFecha}`;
                 const ejecutar = async (programa: string, argumentos: string[]) => execFile(programa, argumentos, { cwd: proyecto, maxBuffer: 1024 * 1024 });
-                await ejecutar('git', ['switch', '-c', rama]);
-                await ejecutar('git', ['add', '--', 'src/content/', 'src/assets/editor/']);
+                // Cada envío parte de main actualizado para no arrastrar ramas anteriores.
+                // El contenido guardado se conserva en memoria y se vuelve a escribir encima.
+                const estado = (await ejecutar('git', ['status', '--porcelain', '-z', '--untracked-files=no'])).stdout.split('\0').filter(Boolean);
+                if (estado.some((linea) => !linea.slice(3).startsWith('src/content/paginas/'))) {
+                  throw new Error('Hay archivos modificados fuera del contenido. Guárdalos o descártalos antes de enviar.');
+                }
+                const contenidoGuardado = await readFile(archivoSeguro, 'utf8');
+                await ejecutar('git', ['fetch', 'origin', 'main']);
+                await ejecutar('git', ['switch', '--discard-changes', '-c', rama, 'origin/main']);
+                await writeFile(archivoSeguro, contenidoGuardado, 'utf8');
+                await ejecutar('git', ['add', '--', 'src/content/paginas/', 'src/assets/editor/']);
                 const archivos = (await ejecutar('git', ['diff', '--cached', '--name-only', '-z'])).stdout.split('\0').filter(Boolean);
-                if (archivos.some((archivo) => !archivo.startsWith('src/content/') && !archivo.startsWith('src/assets/editor/'))) {
+                if (archivos.some((archivo) => !/^src\/content\/paginas\/[^/]+\.md$/.test(archivo) && !/^src\/assets\/editor\/[a-z0-9-]+\.webp$/.test(archivo))) {
                   throw new Error('Se detectaron archivos ajenos al contenido; no se crearán el commit ni el pull request.');
                 }
                 if (!archivos.length) throw new Error('No hay cambios de contenido para enviar.');

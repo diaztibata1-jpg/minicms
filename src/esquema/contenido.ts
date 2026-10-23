@@ -17,7 +17,7 @@ export function crearEsquemaPagina<T extends z.ZodType>(imagen: T) {
     servicios: z.array(servicio).length(3, { error: 'Deben existir exactamente tres servicios.' }),
     contacto_titulo: z.string().min(1, { error: 'El título de contacto no puede estar vacío.' }).max(60, { error: 'El título de contacto no puede superar los 60 caracteres.' }),
     contacto_texto: z.string().min(1, { error: 'El texto de contacto no puede estar vacío.' }).max(160, { error: 'El texto de contacto no puede superar los 160 caracteres.' }),
-    whatsapp: z.string().regex(/^57\d{10}$/, { error: 'WhatsApp debe tener 12 dígitos y empezar por 57.' }),
+    whatsapp: z.string().regex(/^573\d{9}$/, { error: 'WhatsApp debe ser un celular colombiano: 57 seguido de 10 dígitos que empiezan por 3.' }),
     direccion: z.string().min(1, { error: 'La dirección no puede estar vacía.' }).max(160, { error: 'La dirección no puede superar los 160 caracteres.' }),
     horario: z.string().min(1, { error: 'El horario no puede estar vacío.' }).max(120, { error: 'El horario no puede superar los 120 caracteres.' }),
   }).strict();

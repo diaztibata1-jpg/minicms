@@ -56,9 +56,15 @@ if (editorRoot) {
     .editor-galeria span { display: block; overflow-wrap: anywhere; padding: 5px 2px 2px; font-size: 11px; }
     .editor-subir { display: inline-flex; align-items: center; gap: 8px; }
     .editor-error { color: #a52e22; }
+    .editor-whatsapp { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+    .editor-whatsapp span { font: 650 16px sans-serif; }
+    .editor-whatsapp input {
+      flex: 1 1 180px; min-height: 40px; padding: 0 12px; border: 1px solid #b9c5bc;
+      border-radius: 3px; font: 18px sans-serif; letter-spacing: .03em;
+    }
     @media (max-width: 560px) {
       .editor-barra { align-items: stretch; flex-direction: column; gap: 8px; padding: 10px 12px; }
-      .editor-barra__acciones { display: grid; grid-template-columns: 1fr 1fr; }
+      .editor-barra__acciones { display: grid; grid-template-columns: 1fr 1fr 1fr; }
       .editor-panel__contenido { padding: 18px; }
     }
   `;
@@ -72,19 +78,20 @@ if (editorRoot) {
   const barra = document.createElement('aside');
   barra.className = 'editor-barra';
   barra.setAttribute('aria-label', 'Herramientas de edición');
-  barra.innerHTML = '<span class="editor-mensaje" aria-live="polite">Sin cambios sin guardar.</span><div class="editor-barra__acciones"><button type="button" data-guardar>Guardar</button><button type="button" data-enviar>Enviar cambios</button></div>';
+  barra.innerHTML = '<span class="editor-mensaje" aria-live="polite">No hay cambios pendientes.</span><div class="editor-barra__acciones"><button type="button" data-whatsapp>WhatsApp</button><button type="button" data-guardar>Guardar</button><button type="button" data-enviar>Enviar cambios</button></div>';
   document.body.append(barra);
 
   const mensaje = barra.querySelector('.editor-mensaje');
   const botonGuardar = barra.querySelector('[data-guardar]');
   const botonEnviar = barra.querySelector('[data-enviar]');
+  const botonWhatsapp = barra.querySelector('[data-whatsapp]');
   const marcarEnvioPendiente = () => sessionStorage.getItem('editor-cambios-guardados') === '1';
 
   const actualizarBarra = () => {
     const sinGuardar = cambios.size > 0;
     mensaje.textContent = sinGuardar
       ? 'Hay cambios sin guardar.'
-      : marcarEnvioPendiente() ? 'Cambios guardados, listos para enviar.' : 'Sin cambios sin guardar.';
+      : marcarEnvioPendiente() ? 'Cambios guardados, listos para enviar.' : 'No hay cambios pendientes.';
     botonEnviar.disabled = sinGuardar ? false : !marcarEnvioPendiente();
   };
 
@@ -113,11 +120,6 @@ if (editorRoot) {
       document.querySelectorAll(`[data-campo="${campo}"]`).forEach((otro) => {
         if (otro !== elemento) otro.textContent = valor;
       });
-      if (campo === 'whatsapp') {
-        document.querySelectorAll('a[href*="wa.me/"]').forEach((enlace) => {
-          enlace.href = `https://wa.me/${valor.replace(/\D/g, '')}`;
-        });
-      }
       posicionarContador(elemento, valor, maximo);
       actualizarBarra();
     });
@@ -226,12 +228,103 @@ if (editorRoot) {
     elemento.parentElement?.append(boton);
   });
 
+  // En modo edición ningún enlace del sitio navega: así se puede hacer clic en un texto dentro de un botón o enlace.
   document.addEventListener('click', (evento) => {
-    if (evento.target.closest('a[data-campo]')) evento.preventDefault();
-  });
+    const enlace = evento.target.closest('a[href]');
+    if (enlace && !enlace.closest('.editor-barra, .editor-panel')) evento.preventDefault();
+  }, true);
+
+  const numeroActual = () => {
+    const enlace = document.querySelector('a[href*="wa.me/"]');
+    return enlace ? enlace.getAttribute('href').replace(/\D/g, '') : '';
+  };
+
+  const aplicarWhatsapp = (numero) => {
+    document.querySelectorAll('a[href*="wa.me/"]').forEach((enlace) => {
+      enlace.href = `https://wa.me/${numero}`;
+    });
+    document.querySelectorAll('[data-whatsapp-visible]').forEach((elemento) => {
+      elemento.textContent = `+57 ${numero.slice(2, 5)} ${numero.slice(5, 8)} ${numero.slice(8)}`;
+    });
+  };
+
+  const abrirPanelWhatsapp = () => {
+    panel.innerHTML = '';
+    const formulario = document.createElement('form');
+    formulario.className = 'editor-panel__contenido';
+    formulario.method = 'dialog';
+    const cabecera = document.createElement('div');
+    cabecera.className = 'editor-panel__cabecera';
+    const titulo = document.createElement('h2');
+    titulo.textContent = 'Número de WhatsApp';
+    const cerrar = document.createElement('button');
+    cerrar.type = 'button';
+    cerrar.textContent = 'Cerrar';
+    cerrar.addEventListener('click', () => panel.close());
+    cabecera.append(titulo, cerrar);
+
+    const etiqueta = document.createElement('label');
+    etiqueta.className = 'editor-panel__subtitulo';
+    etiqueta.htmlFor = 'editor-whatsapp';
+    etiqueta.textContent = 'Celular de 10 dígitos. Se usa en todos los botones de WhatsApp del sitio.';
+    const fila = document.createElement('div');
+    fila.className = 'editor-whatsapp';
+    const prefijo = document.createElement('span');
+    prefijo.textContent = '+57';
+    const entrada = document.createElement('input');
+    entrada.id = 'editor-whatsapp';
+    entrada.type = 'tel';
+    entrada.inputMode = 'numeric';
+    entrada.autocomplete = 'off';
+    entrada.placeholder = '300 123 4567';
+    const actual = cambios.get('whatsapp') || numeroActual();
+    entrada.value = actual.startsWith('57') ? actual.slice(2) : actual;
+    const aceptar = document.createElement('button');
+    aceptar.type = 'submit';
+    aceptar.textContent = 'Usar este número';
+    fila.append(prefijo, entrada, aceptar);
+    const aviso = document.createElement('p');
+    aviso.className = 'editor-error';
+    aviso.setAttribute('aria-live', 'polite');
+
+    formulario.addEventListener('submit', (evento) => {
+      evento.preventDefault();
+      let digitos = entrada.value.replace(/\D/g, '');
+      if (digitos.length === 12 && digitos.startsWith('57')) digitos = digitos.slice(2);
+      if (!/^3\d{9}$/.test(digitos)) {
+        aviso.textContent = 'Escribe un celular colombiano de 10 dígitos que empiece por 3, por ejemplo 300 123 4567.';
+        entrada.focus();
+        return;
+      }
+      const numero = `57${digitos}`;
+      if (numero !== numeroActual() || cambios.has('whatsapp')) cambios.set('whatsapp', numero);
+      aplicarWhatsapp(numero);
+      actualizarBarra();
+      panel.close();
+    });
+
+    formulario.append(cabecera, etiqueta, fila, aviso);
+    panel.append(formulario);
+    panel.showModal();
+    entrada.focus();
+  };
+
+  botonWhatsapp.addEventListener('click', abrirPanelWhatsapp);
+
+  const leerPagina = async () => (await fetch(location.pathname, { cache: 'no-store' })).text();
+
+  // Astro tarda un momento en releer el contenido después de guardar; se recarga cuando la página ya cambió.
+  const recargarCuandoCambie = async (antes) => {
+    for (let intento = 0; intento < 20; intento += 1) {
+      await new Promise((listo) => setTimeout(listo, 300));
+      if ((await leerPagina()) !== antes) break;
+    }
+    location.reload();
+  };
 
   const guardar = async (recargar) => {
     if (!cambios.size) return;
+    const paginaAntes = recargar ? await leerPagina() : '';
     botonGuardar.disabled = true;
     botonEnviar.disabled = true;
     mensaje.textContent = 'Guardando cambios…';
@@ -247,7 +340,8 @@ if (editorRoot) {
       cambios.clear();
       sessionStorage.setItem('editor-cambios-guardados', '1');
       if (recargar) {
-        location.reload();
+        mensaje.textContent = 'Cambios guardados. Actualizando la página…';
+        await recargarCuandoCambie(paginaAntes);
         return;
       }
       actualizarBarra();

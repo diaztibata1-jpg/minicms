@@ -1,6 +1,6 @@
 ---
 negocio_nombre: Panadería La Espiga
-hero_titulo: 'El aroma del pan recién hecho, cada mañana'
+hero_titulo: 'El aroma del pan recien hecho, cada mañana!'
 hero_texto: >-
   Elaboramos panes, bollería y pasteles con ingredientes locales y el cuidado de
   siempre.
@@ -17,9 +17,8 @@ servicios:
     descripcion: >-
       Croissants y piezas dulces preparados a mano con mantequilla y buenos
       ingredientes.
-    imagen: >-
-      ../../assets/editor/533d0e99-d38f-4245-a9f8-5b8cc01be65b-2026-10-23-0350-3dee612f.webp
-  - titulo: Tortas para celebrar
+    imagen: ../../assets/editor/bolleria-2026-10-23-0325-0cd03a61.webp
+  - titulo: Tortas para celebrar!
     descripcion: >-
       Diseñamos tortas por encargo con sabores de temporada para compartir
       momentos especiales.
@@ -28,8 +27,8 @@ contacto_titulo: Pasa por algo recién horneado
 contacto_texto: >-
   Estamos en el barrio y nos encantará recibirte. También puedes escribirnos
   para reservar.
-whatsapp: '573001234567'
+whatsapp: '573001234568'
 direccion: 'Calle 12 # 8-45, barrio San Miguel, Bogotá'
-horario: 'Lunes a sábado, de 6:00 a. m. a 8:00 p. m.'
+horario: 'Lunes a sábado, de 6:00 a. m. a 8:30 p. m.'
 ---
 

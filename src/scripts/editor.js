@@ -25,7 +25,11 @@ if (editorRoot) {
       font: inherit; font-weight: 650;
     }
     .editor-barra button:last-child { color: #fff; border-color: #c45336; background: #c45336; }
-    .editor-barra button:disabled { opacity: .55; cursor: wait; }
+    .editor-barra button:disabled,
+    .editor-barra button:last-child:disabled {
+      color: #cfd8d3; border-color: #4a5f56; background: #4a5f56; cursor: not-allowed;
+    }
+    .editor-barra[aria-busy="true"] button { cursor: wait; }
     .editor-mensaje { min-width: 0; }
     .editor-contador {
       position: fixed; z-index: 10001; padding: 4px 8px; border-radius: 2px;
@@ -345,6 +349,7 @@ if (editorRoot) {
   const guardar = async (recargar) => {
     if (!cambios.size) return;
     const paginaAntes = recargar ? await leerPagina() : '';
+    barra.setAttribute('aria-busy', 'true');
     botonGuardar.disabled = true;
     botonEnviar.disabled = true;
     mensaje.textContent = 'Guardando cambios…';
@@ -368,6 +373,7 @@ if (editorRoot) {
     } catch (error) {
       mostrarError(error.message);
     } finally {
+      barra.removeAttribute('aria-busy');
       botonGuardar.disabled = false;
       botonEnviar.disabled = false;
     }
@@ -400,7 +406,8 @@ if (editorRoot) {
     if (cambios.size) await guardar(false);
     if (cambios.size || !marcarEnvioPendiente()) return;
     botonEnviar.disabled = true;
-    mensaje.textContent = 'Preparando el pull request…';
+    barra.setAttribute('aria-busy', 'true');
+    mensaje.textContent = 'Enviando cambios…';
     mensaje.classList.remove('editor-error');
     try {
       const respuesta = await fetch('/__editor/enviar', { method: 'POST' });
@@ -413,6 +420,8 @@ if (editorRoot) {
     } catch (error) {
       mostrarError(error.message);
       botonEnviar.disabled = false;
+    } finally {
+      barra.removeAttribute('aria-busy');
     }
   });
 

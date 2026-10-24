@@ -1,0 +1,52 @@
+---
+// Etiquetas para buscadores y para la vista previa al compartir (WhatsApp, Facebook, X).
+import { getCollection } from 'astro:content';
+
+interface Props {
+  titulo: string;
+  descripcion: string;
+  indexar?: boolean;
+  // Solo la página principal lleva los datos estructurados del negocio.
+  negocioLocal?: boolean;
+}
+
+const { titulo, descripcion, indexar = true, negocioLocal = false } = Astro.props;
+const [pagina] = await getCollection('paginas');
+const contenido = pagina.data;
+const canonica = new URL(Astro.url.pathname, Astro.site).href;
+const imagen = new URL('/og.jpg', Astro.site).href;
+// Los textos los edita el cliente: se escapa "<" para que nada pueda cerrar la etiqueta script.
+const datosNegocio = {
+  '@context': 'https://schema.org',
+  '@type': 'LocalBusiness',
+  name: contenido.negocio_nombre,
+  description: contenido.seo_descripcion,
+  url: new URL('/', Astro.site).href,
+  image: imagen,
+  telephone: `+${contenido.whatsapp}`,
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: contenido.direccion,
+    addressLocality: contenido.legal.ciudad,
+    addressCountry: 'CO',
+  },
+};
+---
+
+<meta name="description" content={descripcion} />
+<meta name="theme-color" content="#355d4a" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+{indexar ? <link rel="canonical" href={canonica} /> : <meta name="robots" content="noindex, follow" />}
+<meta property="og:type" content="website" />
+<meta property="og:locale" content="es_CO" />
+<meta property="og:site_name" content={contenido.negocio_nombre} />
+<meta property="og:title" content={titulo} />
+<meta property="og:description" content={descripcion} />
+<meta property="og:url" content={canonica} />
+<meta property="og:image" content={imagen} />
+<meta property="og:image:type" content="image/jpeg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content={`${contenido.negocio_nombre}: ${contenido.hero_titulo}`} />
+<meta name="twitter:card" content="summary_large_image" />
+{negocioLocal && <script type="application/ld+json" set:html={JSON.stringify(datosNegocio).replace(/</g, '\\u003c')} />}

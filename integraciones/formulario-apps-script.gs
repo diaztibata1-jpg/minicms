@@ -44,7 +44,8 @@ function configurar() {
   ScriptApp.getProjectTriggers()
     .filter((disparador) => disparador.getHandlerFunction() === 'avisarNuevos')
     .forEach((disparador) => ScriptApp.deleteTrigger(disparador));
-  ScriptApp.newTrigger('avisarNuevos').timeBased().everyHours(1).create();
+  // Google no da hora exacta: nearMinute(0) lo deja cerca de la hora en punto (unos 15 minutos de margen) en vez de un minuto al azar.
+  ScriptApp.newTrigger('avisarNuevos').timeBased().everyHours(1).nearMinute(0).create();
 }
 
 // Reemplaza los colores de la columna Estado; se puede correr varias veces sin duplicar reglas.
@@ -114,10 +115,40 @@ function avisarNuevos() {
     .sort((a, b) => a[0] - b[0]);
   if (!nuevos.length) return;
 
-  const lista = nuevos
-    .map((fila) => `• ${fila[1]} | ${fila[2]} | ${fila[3]} (${Utilities.formatDate(fila[0], ZONA, 'd MMM h:mm a')})`)
-    .join('\n');
-  const asunto = nuevos.length === 1 ? '1 contacto nuevo desde la página' : `${nuevos.length} contactos nuevos desde la página`;
-  MailApp.sendEmail(para, asunto, `${lista}\n\nVer la hoja: ${SpreadsheetApp.getActive().getUrl()}`);
+  // El correo no lleva datos de las personas (quedan solo en la hoja): cantidad y un botón para abrirla.
+  const cantidad = nuevos.length;
+  const asunto = cantidad === 1 ? '1 contacto nuevo desde la página' : `${cantidad} contactos nuevos desde la página`;
+  const url = SpreadsheetApp.getActive().getUrl();
+  MailApp.sendEmail({
+    to: para,
+    subject: asunto,
+    body: `${asunto}.\n\nAbrir la hoja: ${url}`,
+    htmlBody: correoResumen(cantidad, url),
+  });
   propiedades.setProperty('ULTIMO_AVISO', String(nuevos[nuevos.length - 1][0].getTime()));
+}
+
+// Colores del correo: cambiarlos por los del sitio de cada cliente.
+const CORREO = { fondo: '#f5f0e6', tarjeta: '#ffffff', tinta: '#203b32', gris: '#59685e', boton: '#b24e2e', linea: '#cf6546' };
+
+// Plantilla del resumen. Tablas y estilos en línea porque Gmail y Outlook ignoran las hojas de estilo.
+function correoResumen(cantidad, url) {
+  const titulo = cantidad === 1 ? 'Tienes 1 persona nueva' : `Tienes ${cantidad} personas nuevas`;
+  const texto = cantidad === 1
+    ? 'Alguien dejó sus datos en el formulario de la página. Escríbele pronto: entre más rápido respondas, más fácil es cerrar.'
+    : 'Dejaron sus datos en el formulario de la página. Escríbeles pronto: entre más rápido respondas, más fácil es cerrar.';
+  const c = CORREO;
+  return `<!doctype html><html lang="es"><body style="margin:0;padding:0;background:${c.fondo};">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${c.fondo};">
+<tr><td align="center" style="padding:40px 16px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;background:${c.tarjeta};border-top:4px solid ${c.linea};">
+<tr><td align="center" style="padding:48px 40px 16px;font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:bold;letter-spacing:3px;text-transform:uppercase;color:${c.tinta};">Contactos nuevos</td></tr>
+<tr><td align="center" style="padding:0 40px 18px;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:30px;line-height:38px;color:${c.tinta};">${titulo}</td></tr>
+<tr><td align="center" style="padding:0 48px 32px;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:26px;color:${c.gris};">${texto}</td></tr>
+<tr><td align="center" style="padding:0 40px 48px;">
+<a href="${url}" style="display:inline-block;padding:16px 40px;border-radius:999px;background:${c.boton};font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:bold;letter-spacing:2.5px;text-transform:uppercase;color:#ffffff;text-decoration:none;">Ver contactos</a>
+</td></tr>
+</table>
+<p style="margin:20px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:${c.gris};">Aviso automático del formulario de tu página.</p>
+</td></tr></table></body></html>`;
 }

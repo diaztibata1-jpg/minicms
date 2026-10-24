@@ -3,12 +3,20 @@
 // 1. Configuración del proyecto > Propiedades del script:
 //    - CLAVE: un texto largo al azar (el mismo que va en FORMULARIO_CLAVE en Cloudflare).
 //    - AVISOS_PARA: correo(s) que reciben el resumen cada hora, separados por coma.
-// 2. Ejecutar una vez la función configurar (crea encabezados, estado desplegable y el aviso cada hora).
+// 2. Ejecutar una vez la función configurar (crea encabezados, estado desplegable con colores y el aviso cada hora).
 // 3. Implementar > Nueva implementación > Aplicación web: ejecutar como "Yo", acceso "Cualquier usuario".
 //    La URL (termina en /exec) va en FORMULARIO_URL en Cloudflare.
 const HOJA = 'Contactos';
 const ENCABEZADOS = ['Fecha', 'Nombre', 'Teléfono', 'Correo', 'Estado', 'Autorización datos'];
 const ESTADOS = ['Nuevo', 'Contactado', 'Cotizado', 'Cliente', 'No interesado'];
+// Color de fondo y de texto de cada estado.
+const COLORES = {
+  Nuevo: ['#dbeafe', '#1e40af'],
+  Contactado: ['#fef3c7', '#92400e'],
+  Cotizado: ['#ede9fe', '#5b21b6'],
+  Cliente: ['#dcfce7', '#166534'],
+  'No interesado': ['#f3f4f6', '#4b5563'],
+};
 const ZONA = 'America/Bogota';
 const HORA_INICIO = 7;
 const HORA_FIN = 21;
@@ -27,7 +35,8 @@ function configurar() {
   hoja.getRange(1, 1, 1, ENCABEZADOS.length).setValues([ENCABEZADOS]).setFontWeight('bold');
   hoja.setFrozenRows(1);
   hoja.getRange('A2:A').setNumberFormat('yyyy-mm-dd hh:mm');
-  hoja.getRange('E2:E').setDataValidation(reglaEstados());
+  hoja.getRange('E2:E').setDataValidation(reglaEstados()).setHorizontalAlignment('center');
+  colorearEstados(hoja);
 
   const propiedades = PropertiesService.getScriptProperties();
   if (!propiedades.getProperty('ULTIMO_AVISO')) propiedades.setProperty('ULTIMO_AVISO', String(Date.now()));
@@ -36,6 +45,21 @@ function configurar() {
     .filter((disparador) => disparador.getHandlerFunction() === 'avisarNuevos')
     .forEach((disparador) => ScriptApp.deleteTrigger(disparador));
   ScriptApp.newTrigger('avisarNuevos').timeBased().everyHours(1).create();
+}
+
+// Reemplaza los colores de la columna Estado; se puede correr varias veces sin duplicar reglas.
+function colorearEstados(hoja) {
+  const columna = hoja.getRange('E2:E');
+  const otras = hoja.getConditionalFormatRules()
+    .filter((regla) => !regla.getRanges().some((rango) => rango.getColumn() === 5 && rango.getNumColumns() === 1));
+  const estados = ESTADOS.map((estado) => SpreadsheetApp.newConditionalFormatRule()
+    .whenTextEqualTo(estado)
+    .setBackground(COLORES[estado][0])
+    .setFontColor(COLORES[estado][1])
+    .setBold(true)
+    .setRanges([columna])
+    .build());
+  hoja.setConditionalFormatRules(otras.concat(estados));
 }
 
 // Evita que un texto como "=IMPORTXML(...)" se ejecute como fórmula en la hoja.

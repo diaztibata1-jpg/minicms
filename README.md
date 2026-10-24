@@ -46,7 +46,7 @@ El sitio publicado incluye el editor en `/editar` (no indexado). Funciona sin Co
 
 Configuración (una vez por sitio):
 
-1. **Token de GitHub:** fine-grained, solo para este repositorio, con **Contents** y **Pull requests** en *Read and write*, y **Checks** en *Read-only* (para saber si la validación pasó).
+1. **Token de GitHub:** fine-grained, solo para este repositorio, con **Contents** y **Pull requests** en *Read and write*. No necesita más permisos.
 2. **Cloudflare Access:** en Zero Trust crea una aplicación *Self-hosted* para el dominio del sitio con dos rutas, `editar` y `api/editor`, y una política *Allow* con el correo del cliente (login con código de un solo uso por correo). Copia el **Application Audience (AUD) Tag** y el dominio del equipo (`https://<equipo>.cloudflareaccess.com`).
 3. **Variables del proyecto en Cloudflare Pages** (Settings > Variables and secrets, entorno Production): `EDITOR_GITHUB_TOKEN` (secreto), `ACCESS_TEAM_DOMAIN` y `ACCESS_AUD`. Opcional: `GITHUB_REPO` (por defecto `diaztibata1-jpg/minicms`).
 

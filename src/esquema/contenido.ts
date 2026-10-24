@@ -22,6 +22,12 @@ export function crearEsquemaPagina<T extends z.ZodType>(imagen: T) {
     horario: z.string().min(1, { error: 'El horario no puede estar vacío.' }).max(120, { error: 'El horario no puede superar los 120 caracteres.' }),
     // Frase para Google y para la vista previa al compartir. No se edita desde el editor visual.
     seo_descripcion: z.string().min(50).max(155, { error: 'La descripción para buscadores no puede superar los 155 caracteres.' }),
+    // Personas con firma de correo en /firma/. No se editan desde el editor visual.
+    firmas: z.array(z.object({
+      nombre: z.string().min(1).max(60),
+      cargo: z.string().min(1).max(60),
+      correo: z.email().max(120),
+    }).strict()).min(1).max(5),
     // Datos de la política de tratamiento de datos. No se editan desde el editor visual.
     legal: z.object({
       responsable: z.string().min(1).max(120),

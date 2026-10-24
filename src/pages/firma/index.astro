@@ -1,0 +1,71 @@
+---
+// Firmas de correo listas para copiar y pegar en Gmail u Outlook. Página oculta: no se indexa ni se enlaza.
+// La firma usa tablas y estilos en línea porque los clientes de correo ignoran las hojas de estilo.
+import { getCollection } from 'astro:content';
+import Sencilla from '../../layouts/Sencilla.astro';
+
+const [pagina] = await getCollection('paginas');
+const contenido = pagina.data;
+const sitio = new URL('/', Astro.site);
+const logo = new URL('/firma/logo.png', Astro.site).href;
+const telefono = contenido.whatsapp.replace(/^57(\d{3})(\d{3})(\d{4})$/, '+57 $1 $2 $3');
+const enlace = 'color:#355d4a;text-decoration:none;';
+const texto = 'margin:0;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:20px;color:#59685e;';
+---
+
+<Sencilla titulo="Firma de correo">
+  <section class="sencilla__mensaje firma">
+    <span class="seccion__numero">Firma de correo</span>
+    <h1>Copia tu firma</h1>
+    <ol class="firma__pasos">
+      <li>Toca <strong>Copiar firma</strong> debajo de tu nombre.</li>
+      <li>En Gmail: Configuración (rueda) → Ver todos los ajustes → General → Firma → Crear nueva.</li>
+      <li>Pega la firma, ponle un nombre y elige usarla en correos nuevos y respuestas. Guarda al final de la página.</li>
+    </ol>
+    {contenido.firmas.map((persona, i) => (
+      <div class="firma__bloque">
+        <div class="firma__vista" id={`firma-${i}`}>
+          <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+            <tr>
+              <td style="padding:0 16px 0 0;vertical-align:top;">
+                <img src={logo} width="64" height="64" alt={contenido.negocio_nombre} style="display:block;border:0;" />
+              </td>
+              <td style="padding:0 0 0 16px;border-left:3px solid #cf6546;vertical-align:top;">
+                <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:18px;line-height:24px;color:#203b32;">{persona.nombre}</p>
+                <p style={texto}>{persona.cargo} · <span style="color:#cf6546;font-weight:bold;">{contenido.negocio_nombre}</span></p>
+                <p style={texto}>WhatsApp <a href={`https://wa.me/${contenido.whatsapp}`} style={enlace}>{telefono}</a> · <a href={`mailto:${persona.correo}`} style={enlace}>{persona.correo}</a></p>
+                <p style={texto}><a href={sitio.href} style={enlace}>{sitio.host}</a> · {contenido.direccion}</p>
+              </td>
+            </tr>
+          </table>
+        </div>
+        <button class="boton boton--oscuro" type="button" data-copiar={`firma-${i}`}>Copiar firma</button>
+      </div>
+    ))}
+  </section>
+</Sencilla>
+
+<script>
+  // Copia la firma con su formato. Si el navegador no deja escribir HTML en el portapapeles, selecciona y copia.
+  document.querySelectorAll<HTMLButtonElement>('[data-copiar]').forEach((boton) => {
+    boton.addEventListener('click', async () => {
+      const firma = document.getElementById(boton.dataset.copiar!)!;
+      try {
+        await navigator.clipboard.write([new ClipboardItem({
+          'text/html': new Blob([firma.innerHTML], { type: 'text/html' }),
+          'text/plain': new Blob([firma.innerText], { type: 'text/plain' }),
+        })]);
+      } catch {
+        const rango = document.createRange();
+        rango.selectNodeContents(firma);
+        const seleccion = window.getSelection()!;
+        seleccion.removeAllRanges();
+        seleccion.addRange(rango);
+        document.execCommand('copy');
+        seleccion.removeAllRanges();
+      }
+      boton.textContent = '¡Copiada! Ahora pégala en Gmail';
+      setTimeout(() => (boton.textContent = 'Copiar firma'), 4000);
+    });
+  });
+</script>

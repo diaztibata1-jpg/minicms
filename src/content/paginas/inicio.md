@@ -21,6 +21,10 @@ whatsapp: "573001234564"
 direccion: "Calle 12 # 8-47, barrio San Miguel, Bogotá"
 horario: Lunes a sábado, de 6:00 a. m. a 8:00 p. m.
 seo_descripcion: Panadería artesanal en el barrio San Miguel, Bogotá. Pan de masa madre, bollería y tortas por encargo, horneados cada mañana. Pide por WhatsApp.
+firmas:
+  - nombre: Laura Gómez (ejemplo)
+    cargo: Administradora
+    correo: hola@panaderialaespiga.co
 legal:
   responsable: Panadería La Espiga S.A.S. (ejemplo)
   documento: NIT 900.000.000-0 (ejemplo)

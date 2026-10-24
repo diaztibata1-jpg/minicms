@@ -47,7 +47,8 @@ El sitio publicado incluye el editor en `/editar` (no indexado). Funciona sin Co
 Configuración (una vez por sitio):
 
 1. **Token de GitHub:** fine-grained, solo para este repositorio, con **Contents** y **Pull requests** en *Read and write*. No necesita más permisos.
-2. **Cloudflare Access:** en Zero Trust crea una aplicación *Self-hosted* para el dominio del sitio con dos rutas, `editar` y `api/editor`, y una política *Allow* con el correo del cliente (login con código de un solo uso por correo). Copia el **Application Audience (AUD) Tag** y el dominio del equipo (`https://<equipo>.cloudflareaccess.com`).
-3. **Variables del proyecto en Cloudflare Pages** (Settings > Variables and secrets, entorno Production): `EDITOR_GITHUB_TOKEN` (secreto), `ACCESS_TEAM_DOMAIN` y `ACCESS_AUD`. Opcional: `GITHUB_REPO` (por defecto `diaztibata1-jpg/minicms`).
+2. **Contraseña del editor:** una por sitio, de 12 caracteres o más (mejor generada por un gestor de contraseñas). Al entrar a `/editar` se pide la contraseña y la sesión dura 8 horas. Cambiar la contraseña o el token cierra todas las sesiones.
+3. **Variables del proyecto en Cloudflare Pages** (Settings > Variables and secrets, entorno Production): `EDITOR_GITHUB_TOKEN` y `EDITOR_PASSWORD`, las dos como secreto. Opcional: `GITHUB_REPO` (por defecto `diaztibata1-jpg/minicms`).
+4. **Bloqueo de intentos (opcional, recomendado):** crea un namespace KV (Storage & databases > KV) y enlázalo al proyecto en Settings > Bindings con el nombre `EDITOR_KV`. Con él, una IP queda bloqueada 15 minutos tras 5 contraseñas incorrectas. Sin él, cada intento fallido solo espera un segundo.
 
-Si falta alguna variable, la API responde que el editor no está configurado y no publica nada.
+Si falta alguna variable o la contraseña es corta, `/editar` muestra que el editor no está configurado y la API no publica nada.

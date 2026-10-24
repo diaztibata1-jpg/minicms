@@ -1,15 +1,15 @@
 // API del editor en línea (/editar). Corre como Pages Function en Cloudflare.
-// Cloudflare Access pide el login antes de llegar aquí; igual se verifica el JWT de Access
-// para que la API quede cerrada si Access se desconfigura.
+// Solo responde con la sesión que crea el login de /editar (functions/editar/_middleware.js).
 //
 // Variables del proyecto en Cloudflare Pages (Settings > Variables and secrets):
 // - EDITOR_GITHUB_TOKEN: token fine-grained solo para este repo (Contents y Pull requests: escritura).
-// - ACCESS_TEAM_DOMAIN: por ejemplo https://equipo.cloudflareaccess.com
-// - ACCESS_AUD: el "Application Audience (AUD) Tag" de la aplicación de Access.
+// - EDITOR_PASSWORD: contraseña del editor, de 12 caracteres o más.
+// - EDITOR_KV (opcional): KV enlazado para bloquear la IP tras 5 intentos fallidos.
 // - GITHUB_REPO (opcional): dueño/repositorio; por defecto diaztibata1-jpg/minicms.
 import { parse, stringify } from 'yaml';
 import { z } from 'zod';
 import { camposImagen, crearEsquemaPagina, limitesCampos } from '../../../src/esquema/contenido';
+import { editorConfigurado, sesionValida } from '../../../src/servidor/sesion.js';
 
 const archivoContenido = 'src/content/paginas/inicio.md';
 const carpetaImagenes = 'src/assets/editor';
@@ -31,10 +31,6 @@ const json = (datos, estado = 200) => new Response(JSON.stringify(datos), {
   headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' },
 });
 
-const base64UrlABytes = (texto) => {
-  const base64 = texto.replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(texto.length / 4) * 4, '=');
-  return Uint8Array.from(atob(base64), (caracter) => caracter.charCodeAt(0));
-};
 const base64ABytes = (texto) => Uint8Array.from(atob(texto), (caracter) => caracter.charCodeAt(0));
 const textoABase64 = (texto) => {
   const bytes = new TextEncoder().encode(texto);
@@ -42,40 +38,6 @@ const textoABase64 = (texto) => {
   for (let i = 0; i < bytes.length; i += 0x8000) binario += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
   return btoa(binario);
 };
-
-async function verificarAcceso(request, env) {
-  if (!env.ACCESS_TEAM_DOMAIN || !env.ACCESS_AUD) {
-    throw new ErrorEditor('El editor no tiene configurado el inicio de sesión.', 503);
-  }
-  const token = request.headers.get('Cf-Access-Jwt-Assertion');
-  if (!token) throw new ErrorEditor('Inicia sesión para usar el editor.', 401);
-  const partes = token.split('.');
-  if (partes.length !== 3) throw new ErrorEditor('Sesión no válida.', 401);
-  const [cabeceraTexto, cargaTexto, firma] = partes;
-  const decodificar = (parte) => JSON.parse(new TextDecoder().decode(base64UrlABytes(parte)));
-  const cabecera = decodificar(cabeceraTexto);
-  const carga = decodificar(cargaTexto);
-  const dominio = env.ACCESS_TEAM_DOMAIN.replace(/\/+$/, '');
-
-  const certificados = await fetch(`${dominio}/cdn-cgi/access/certs`, { cf: { cacheTtl: 3600 } });
-  if (!certificados.ok) throw new ErrorEditor('No se pudo verificar la sesión.', 503);
-  const { keys = [] } = await certificados.json();
-  const jwk = keys.find((clave) => clave.kid === cabecera.kid);
-  if (!jwk || cabecera.alg !== 'RS256') throw new ErrorEditor('Sesión no válida.', 401);
-  const clave = await crypto.subtle.importKey('jwk', jwk, { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['verify']);
-  const valida = await crypto.subtle.verify(
-    'RSASSA-PKCS1-v1_5',
-    clave,
-    base64UrlABytes(firma),
-    new TextEncoder().encode(`${cabeceraTexto}.${cargaTexto}`),
-  );
-  const audiencias = Array.isArray(carga.aud) ? carga.aud : [carga.aud];
-  const ahora = Math.floor(Date.now() / 1000);
-  if (!valida || !audiencias.includes(env.ACCESS_AUD) || carga.iss !== dominio || !(carga.exp > ahora)) {
-    throw new ErrorEditor('Sesión no válida o vencida. Vuelve a iniciar sesión.', 401);
-  }
-  return carga.email || 'desconocido';
-}
 
 function crearGithub(env) {
   if (!env.EDITOR_GITHUB_TOKEN) throw new ErrorEditor('El editor no tiene configurado el acceso a GitHub.', 503);
@@ -144,7 +106,7 @@ function validarImagenNueva(imagen) {
   }
 }
 
-async function publicar(request, github, email) {
+async function publicar(request, github) {
   if (Number(request.headers.get('Content-Length') || 0) > 3 * 1024 * 1024) {
     throw new ErrorEditor('El envío es demasiado grande.');
   }
@@ -223,7 +185,7 @@ async function publicar(request, github, email) {
       title: 'Cambios de contenido',
       head: rama,
       base: 'main',
-      body: `Cambios de contenido enviados desde /editar por ${email}.`,
+      body: 'Cambios de contenido enviados desde /editar.',
     }),
   });
   return json({ numero: pr.number });
@@ -276,7 +238,8 @@ async function servirImagen(nombre, github) {
 
 export async function onRequest({ request, env, params }) {
   try {
-    const email = await verificarAcceso(request, env);
+    if (!editorConfigurado(env)) throw new ErrorEditor('El editor no está configurado.', 503);
+    if (!(await sesionValida(request, env))) throw new ErrorEditor('Tu sesión venció. Recarga la página para entrar de nuevo.', 401);
     const ruta = (params.ruta || []).join('/');
     const url = new URL(request.url);
     const github = crearGithub(env);
@@ -284,7 +247,7 @@ export async function onRequest({ request, env, params }) {
     if (request.method === 'POST' && ruta === 'publicar') {
       // Evita envíos desde otros sitios con la sesión del usuario.
       if (request.headers.get('Origin') !== url.origin) throw new ErrorEditor('La solicitud no proviene de este sitio.', 403);
-      return await publicar(request, github, email);
+      return await publicar(request, github);
     }
     if (request.method === 'GET' && ruta === 'estado') return await estado(url, github);
     if (request.method === 'GET' && ruta === 'imagenes') return await listarImagenes(github);

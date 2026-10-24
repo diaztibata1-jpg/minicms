@@ -114,6 +114,11 @@ if (editorRoot) {
       formulario.submit();
     });
     botonWhatsapp.before(botonSalir);
+    const botonFirma = document.createElement('button');
+    botonFirma.type = 'button';
+    botonFirma.textContent = 'Firma de correo';
+    botonFirma.addEventListener('click', () => window.location.assign('/editar/firma/'));
+    botonWhatsapp.before(botonFirma);
     window.addEventListener('beforeunload', (evento) => {
       if (cambios.size) evento.preventDefault();
     });

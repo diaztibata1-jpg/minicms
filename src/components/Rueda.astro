@@ -1,0 +1,57 @@
+---
+// Sello circular que gira como una llanta: lento en reposo y más rápido mientras se hace scroll.
+interface Props {
+  texto: string;
+}
+
+const { texto } = Astro.props;
+---
+
+<div class="rueda" aria-hidden="true" data-rueda>
+  <svg class="rueda__giro" viewBox="0 0 200 200">
+    <defs>
+      <path id="rueda-circulo" d="M100,100 m-78,0 a78,78 0 1,1 156,0 a78,78 0 1,1 -156,0" />
+    </defs>
+    <circle class="rueda__llanta" cx="100" cy="100" r="96" />
+    <g class="rueda__radios">
+      {Array.from({ length: 12 }, (_, i) => <line x1="100" y1="100" x2="100" y2="40" transform={`rotate(${i * 30} 100 100)`} />)}
+    </g>
+    <text class="rueda__texto">
+      <textPath href="#rueda-circulo" textLength="488">{texto}</textPath>
+    </text>
+  </svg>
+  <svg class="rueda__centro" viewBox="0 0 64 64">
+    <circle cx="32" cy="32" r="30" />
+    <path d="M32 54V14M32 22c-6-1-9-5-9-9 6 1 9 5 9 9Zm0 0c6-1 9-5 9-9-6 1-9 5-9 9Zm0 10c-6-1-9-5-9-9 6 1 9 5 9 9Zm0 0c6-1 9-5 9-9-6 1-9 5-9 9Zm0 10c-6-1-9-5-9-9 6 1 9 5 9 9Zm0 0c6-1 9-5 9-9-6 1-9 5-9 9Z" />
+  </svg>
+</div>
+
+<script>
+  const rueda = document.querySelector<HTMLElement>('[data-rueda] .rueda__giro');
+  const quieto = window.matchMedia('(prefers-reduced-motion: reduce)');
+  if (rueda && !quieto.matches) {
+    let angulo = 0;
+    let impulso = 0;
+    let ultimoScroll = window.scrollY;
+    // El scroll empuja la rueda (hacia abajo gira a la derecha, hacia arriba a la izquierda) y el impulso se frena solo.
+    window.addEventListener('scroll', () => {
+      impulso += (window.scrollY - ultimoScroll) * 0.25;
+      impulso = Math.max(-40, Math.min(40, impulso));
+      ultimoScroll = window.scrollY;
+    }, { passive: true });
+    let visible = false;
+    const girar = () => {
+      if (!visible) return;
+      angulo = (angulo + 0.15 + impulso) % 360;
+      impulso *= 0.92;
+      rueda.style.transform = `rotate(${angulo}deg)`;
+      requestAnimationFrame(girar);
+    };
+    // Fuera de pantalla la rueda se detiene para no gastar batería.
+    new IntersectionObserver(([entrada]) => {
+      const antes = visible;
+      visible = entrada.isIntersecting;
+      if (visible && !antes) requestAnimationFrame(girar);
+    }).observe(rueda);
+  }
+</script>

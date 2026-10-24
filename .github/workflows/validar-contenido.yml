@@ -198,3 +198,20 @@ jobs:
             echo 'Comprueba que **Allow auto-merge** esté activado en Settings y que `main` tenga un ruleset que exija el check `validar-contenido`.' >> "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
+
+  rechazar:
+    name: rechazo-automatico
+    needs: validar
+    if: failure() && startsWith(github.event.pull_request.head.ref, 'cambios/') && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Cerrar el envío rechazado
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          gh pr close "$PR_URL" --delete-branch --comment 'Cambios rechazados automáticamente: no pasaron la validación de contenido.'
+          echo '## ❌ Envío rechazado y cerrado' >> "$GITHUB_STEP_SUMMARY"

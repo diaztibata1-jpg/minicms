@@ -152,7 +152,7 @@ export default function editorIntegration(): AstroIntegration {
               }
 
               if (solicitud.method === 'GET' && ruta === '/__editor/estado') {
-                // Traduce el estado del pull request a algo que entienda quien edita.
+                // Resume el pull request en publicado, rechazado o revisando para quien edita.
                 const numero = new URL(solicitud.url ?? '/', 'http://localhost').searchParams.get('pr') ?? '';
                 if (!/^\d{1,9}$/.test(numero)) throw new Error('Número de pull request no válido.');
                 const { stdout } = await execFile('gh', ['pr', 'view', numero, '--json', 'state,statusCheckRollup'], { cwd: proyecto });
@@ -160,8 +160,7 @@ export default function editorIntegration(): AstroIntegration {
                 const fallo = (pr.statusCheckRollup ?? []).some((check) => ['FAILURE', 'ERROR', 'CANCELLED', 'TIMED_OUT', 'ACTION_REQUIRED'].includes(check.conclusion || check.state || ''));
                 let estado = 'revisando';
                 if (pr.state === 'MERGED') estado = 'publicado';
-                else if (pr.state === 'CLOSED') estado = 'cerrado';
-                else if (fallo) estado = 'rechazado';
+                else if (pr.state === 'CLOSED' || fallo) estado = 'rechazado';
                 responder(respuesta, 200, { estado });
                 return;
               }

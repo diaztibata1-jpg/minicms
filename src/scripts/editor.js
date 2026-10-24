@@ -353,21 +353,26 @@ if (editorRoot) {
     }
   };
 
-  // Consulta el pull request hasta saber si se publicó o si necesita revisión del equipo.
-  const seguirEstado = async (numero, mostrarEstado) => {
+  // Consulta el envío hasta saber si se publicó o se rechazó.
+  const seguirEstado = async (numero) => {
     for (let intento = 0; intento < 60; intento += 1) {
       await new Promise((listo) => setTimeout(listo, 5000));
       try {
         const respuesta = await fetch(`/__editor/estado?pr=${encodeURIComponent(numero)}`, { cache: 'no-store' });
         const { estado } = await respuesta.json();
-        if (estado === 'publicado') return mostrarEstado('✓ Cambios aprobados. El sitio se actualiza en unos minutos.');
-        if (estado === 'rechazado') return mostrarEstado('El equipo revisará estos cambios antes de publicarlos', true, true);
-        if (estado === 'cerrado') return mostrarEstado('Estos cambios no se publicaron', true, true);
+        if (estado === 'publicado') {
+          mensaje.textContent = '✓ Cambios publicados. El sitio se actualiza en unos minutos.';
+          return;
+        }
+        if (estado === 'rechazado') {
+          mostrarError('No se publicaron los cambios. Revisa los textos y las imágenes e intenta de nuevo.');
+          return;
+        }
       } catch {
         // Un fallo de red puntual no detiene el seguimiento.
       }
     }
-    mostrarEstado('La revisión está tardando más de lo normal', true);
+    mostrarError('No se pudo confirmar la publicación. Recarga la página en unos minutos.');
   };
 
   botonGuardar.addEventListener('click', () => guardar(true));
@@ -383,18 +388,8 @@ if (editorRoot) {
       if (!respuesta.ok) throw new Error(resultado.error || 'No se pudieron enviar los cambios.');
       sessionStorage.removeItem('editor-cambios-guardados');
       actualizarBarra();
-      const enlace = document.createElement('a');
-      enlace.href = resultado.url;
-      enlace.target = '_blank';
-      enlace.rel = 'noopener noreferrer';
-      enlace.textContent = 'ver detalle';
-      enlace.style.color = '#fff';
-      const mostrarEstado = (texto, conEnlace = false, error = false) => {
-        mensaje.classList.toggle('editor-error', error);
-        mensaje.replaceChildren(texto, ...(conEnlace ? [' (', enlace, ')'] : []));
-      };
-      mostrarEstado('Cambios enviados. Revisando que todo esté en orden…');
-      if (resultado.numero) void seguirEstado(resultado.numero, mostrarEstado);
+      mensaje.textContent = 'Cambios enviados. Revisando que todo esté en orden…';
+      if (resultado.numero) void seguirEstado(resultado.numero);
     } catch (error) {
       mostrarError(error.message);
       botonEnviar.disabled = false;

@@ -21,7 +21,7 @@ export async function onRequestPost({ request, env }) {
   const quiereJson = (request.headers.get('Accept') ?? '').includes('application/json');
   const responder = (datos, estado = 200) => (quiereJson
     ? json(datos, estado)
-    : new Response(null, { status: 303, headers: { Location: `/?contacto=${datos.ok ? 'enviado' : 'error'}#contacto` } }));
+    : new Response(null, { status: 303, headers: { Location: datos.ok ? '/gracias/' : '/?contacto=error#contacto' } }));
 
   if (request.headers.get('Origin') !== url.origin) return responder({ error: 'La solicitud no proviene de este sitio.' }, 403);
   if (!env.FORMULARIO_URL || !env.FORMULARIO_CLAVE) return responder({ error: 'El formulario todavía no está configurado.' }, 503);
@@ -52,7 +52,7 @@ export async function onRequestPost({ request, env }) {
     const respuesta = await fetch(env.FORMULARIO_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ clave: env.FORMULARIO_CLAVE, nombre, telefono, correo }),
+      body: JSON.stringify({ clave: env.FORMULARIO_CLAVE, nombre, telefono, correo, autorizacion: 'Sí' }),
     });
     const resultado = await respuesta.json().catch(() => ({}));
     if (!respuesta.ok || resultado.ok !== true) {

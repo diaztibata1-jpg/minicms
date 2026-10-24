@@ -302,6 +302,10 @@ h1 {
   accent-color: var(--coral);
 }
 
+.formulario .formulario__autorizacion a {
+  color: var(--papel-claro);
+}
+
 .formulario .formulario__autorizacion span {
   margin: 0;
   font-size: 13px;
@@ -398,4 +402,62 @@ h1 {
     flex-direction: column;
     gap: 8px;
   }
+}
+.sencilla {
+  padding: 72px 10vw 96px;
+}
+
+.sencilla__mensaje {
+  max-width: 640px;
+}
+
+.sencilla__mensaje p {
+  max-width: 480px;
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+.sencilla__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.sencilla__volver {
+  border: 1px solid var(--verde);
+  color: var(--verde);
+}
+
+.politica {
+  max-width: 760px;
+  font-size: 15px;
+  line-height: 1.75;
+}
+
+.politica h1 {
+  max-width: none;
+  font-size: clamp(34px, 4.5vw, 54px);
+}
+
+.politica h2 {
+  margin: 40px 0 12px;
+  font-size: 24px;
+}
+
+.politica ul {
+  padding-left: 20px;
+}
+
+.politica li {
+  margin-bottom: 6px;
+}
+
+.politica__resumen {
+  padding: 18px 20px;
+  background: var(--papel);
+}
+
+.pie a {
+  text-decoration: none;
 }

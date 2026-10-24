@@ -37,6 +37,7 @@ const contenido = pagina.data;
       <Servicios titulo={contenido.servicios_titulo} servicios={contenido.servicios} />
       <div id="contacto">
         <Contacto
+          negocio={contenido.negocio_nombre}
           titulo={contenido.contacto_titulo}
           texto={contenido.contacto_texto}
           whatsapp={contenido.whatsapp}
@@ -48,6 +49,7 @@ const contenido = pagina.data;
     <footer class="pie">
       <span data-campo="negocio_nombre">{contenido.negocio_nombre}</span>
       <span data-campo="direccion">{contenido.direccion}</span>
+      <a href="/politica-de-datos">Política de tratamiento de datos</a>
     </footer>
     {edicion && <Editor modo={edicion} />}
   </body>

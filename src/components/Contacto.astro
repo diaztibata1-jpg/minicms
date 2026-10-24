@@ -2,6 +2,7 @@
 import Formulario from './Formulario.astro';
 
 interface Props {
+  negocio: string;
   titulo: string;
   texto: string;
   whatsapp: string;
@@ -9,7 +10,7 @@ interface Props {
   horario: string;
 }
 
-const { titulo, texto, whatsapp, direccion, horario } = Astro.props;
+const { negocio, titulo, texto, whatsapp, direccion, horario } = Astro.props;
 const whatsappVisible = `+57 ${whatsapp.slice(2, 5)} ${whatsapp.slice(5, 8)} ${whatsapp.slice(8)}`;
 ---
 
@@ -33,5 +34,5 @@ const whatsappVisible = `+57 ${whatsapp.slice(2, 5)} ${whatsapp.slice(5, 8)} ${w
       <p data-campo="horario">{horario}</p>
     </div>
   </div>
-  <Formulario />
+  <Formulario negocio={negocio} />
 </section>

@@ -29,7 +29,7 @@ class ErrorEditor extends Error {
 
 const json = (datos, estado = 200) => new Response(JSON.stringify(datos), {
   status: estado,
-  headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' },
+  headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' },
 });
 
 const base64ABytes = (texto) => Uint8Array.from(atob(texto), (caracter) => caracter.charCodeAt(0));

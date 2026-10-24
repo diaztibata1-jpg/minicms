@@ -1,6 +1,15 @@
 ---
 import { limitesCampos } from '../esquema/contenido';
+
+interface Props {
+  modo: 'local' | 'nube';
+}
+
+const { modo } = Astro.props;
+const api = modo === 'nube' ? '/api/editor' : '/__editor';
 ---
 
-<div id="editor-visual" data-limites={JSON.stringify(limitesCampos)}></div>
-<script is:inline src="/__editor/client.js"></script>
+<div id="editor-visual" data-limites={JSON.stringify(limitesCampos)} data-modo={modo} data-api={api}></div>
+{modo === 'local'
+  ? <script is:inline src="/__editor/client.js"></script>
+  : <script>import '../scripts/editor.js';</script>}

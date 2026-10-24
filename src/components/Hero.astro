@@ -1,5 +1,6 @@
 ---
 import { Image } from 'astro:assets';
+import Rueda from './Rueda.astro';
 
 interface Props {
   contenido: {
@@ -33,4 +34,5 @@ const { contenido } = Astro.props;
       data-campo-imagen="hero_imagen"
     />
   </div>
+  <Rueda texto={`${contenido.negocio_nombre} · Horneado cada mañana · `} />
 </section>

@@ -123,7 +123,7 @@ export default function editorIntegration(): AstroIntegration {
             esClienteEditor
             || esArchivo
             || (solicitud.method === 'POST' && ['/__editor/guardar', '/__editor/imagen', '/__editor/enviar'].includes(ruta))
-            || (solicitud.method === 'GET' && ruta === '/__editor/imagenes')
+            || (solicitud.method === 'GET' && ['/__editor/imagenes', '/__editor/estado'].includes(ruta))
           );
           if (!esRutaEditor) return siguiente();
 
@@ -148,6 +148,20 @@ export default function editorIntegration(): AstroIntegration {
                 const contenido = await readFile(archivoReal);
                 respuesta.writeHead(200, { 'Content-Type': 'image/webp', 'Cache-Control': 'no-store' });
                 respuesta.end(contenido);
+                return;
+              }
+
+              if (solicitud.method === 'GET' && ruta === '/__editor/estado') {
+                // Resume el pull request en publicado, rechazado o revisando para quien edita.
+                const numero = new URL(solicitud.url ?? '/', 'http://localhost').searchParams.get('pr') ?? '';
+                if (!/^\d{1,9}$/.test(numero)) throw new Error('Número de pull request no válido.');
+                const { stdout } = await execFile('gh', ['pr', 'view', numero, '--json', 'state,statusCheckRollup'], { cwd: proyecto });
+                const pr = JSON.parse(stdout) as { state: string; statusCheckRollup?: { conclusion?: string; state?: string }[] };
+                const fallo = (pr.statusCheckRollup ?? []).some((check) => ['FAILURE', 'ERROR', 'CANCELLED', 'TIMED_OUT', 'ACTION_REQUIRED'].includes(check.conclusion || check.state || ''));
+                let estado = 'revisando';
+                if (pr.state === 'MERGED') estado = 'publicado';
+                else if (pr.state === 'CLOSED' || fallo) estado = 'rechazado';
+                responder(respuesta, 200, { estado });
                 return;
               }
 
@@ -301,7 +315,8 @@ export default function editorIntegration(): AstroIntegration {
                   '--title', 'Cambios de contenido',
                   '--body', 'Cambios de contenido enviados desde el editor visual.',
                 ]);
-                responder(respuesta, 200, { url: pullRequest.stdout.trim() });
+                const url = pullRequest.stdout.trim();
+                responder(respuesta, 200, { url, numero: url.match(/\/pull\/(\d+)/)?.[1] ?? null });
               }
             } catch (error) {
               const mensaje = error instanceof Error ? error.message : 'No se pudo completar la solicitud.';

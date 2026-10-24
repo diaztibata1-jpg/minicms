@@ -161,7 +161,7 @@ if (editorRoot) {
 
     const subirTexto = document.createElement('p');
     subirTexto.className = 'editor-panel__subtitulo';
-    subirTexto.textContent = 'Subir una imagen desde el computador';
+    subirTexto.textContent = 'Subir una imagen desde el computador (JPG, PNG o WebP, máximo 10 MB)';
     const entrada = document.createElement('input');
     entrada.className = 'editor-subir';
     entrada.type = 'file';
@@ -170,9 +170,24 @@ if (editorRoot) {
     entrada.addEventListener('change', async () => {
       const archivo = entrada.files?.[0];
       if (!archivo) return;
+      contenido.querySelector('.editor-error')?.remove();
       const datos = new FormData();
       datos.append('file', archivo);
       try {
+        // Se rechaza en el navegador lo que el servidor rechazaría, para no subir el archivo en vano.
+        if (!['image/jpeg', 'image/png', 'image/webp'].includes(archivo.type)) {
+          throw new Error('Formato no permitido. Usa una imagen JPG, PNG o WebP (las fotos HEIC del iPhone no sirven).');
+        }
+        if (archivo.size > 10 * 1024 * 1024) {
+          throw new Error('La imagen pesa más de 10 MB. Usa una más liviana.');
+        }
+        const mapa = await createImageBitmap(archivo).catch(() => null);
+        if (!mapa) throw new Error('El archivo no es una imagen válida.');
+        const pixeles = mapa.width * mapa.height;
+        mapa.close();
+        if (pixeles > 80_000_000) {
+          throw new Error('La imagen es demasiado grande (más de 80 megapíxeles). Usa una más pequeña.');
+        }
         const respuesta = await fetch('/__editor/imagen', { method: 'POST', body: datos });
         const resultado = await respuesta.json();
         if (!respuesta.ok) throw new Error(resultado.error || 'No se pudo subir la imagen.');
@@ -182,6 +197,7 @@ if (editorRoot) {
         aviso.className = 'editor-error';
         aviso.textContent = error.message;
         contenido.append(aviso);
+        entrada.value = '';
       }
     });
 

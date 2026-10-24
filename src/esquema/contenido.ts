@@ -20,6 +20,8 @@ export function crearEsquemaPagina<T extends z.ZodType>(imagen: T) {
     whatsapp: z.string().regex(/^573\d{9}$/, { error: 'WhatsApp debe ser un celular colombiano: 57 seguido de 10 dígitos que empiezan por 3.' }),
     direccion: z.string().min(1, { error: 'La dirección no puede estar vacía.' }).max(160, { error: 'La dirección no puede superar los 160 caracteres.' }),
     horario: z.string().min(1, { error: 'El horario no puede estar vacío.' }).max(120, { error: 'El horario no puede superar los 120 caracteres.' }),
+    // Frase para Google y para la vista previa al compartir. No se edita desde el editor visual.
+    seo_descripcion: z.string().min(50).max(155, { error: 'La descripción para buscadores no puede superar los 155 caracteres.' }),
     // Datos de la política de tratamiento de datos. No se editan desde el editor visual.
     legal: z.object({
       responsable: z.string().min(1).max(120),

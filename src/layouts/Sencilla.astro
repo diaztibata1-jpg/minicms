@@ -1,6 +1,7 @@
 ---
 // Páginas secundarias (gracias, política de datos, 404): misma cabecera y pie que la principal.
 import { getCollection } from 'astro:content';
+import Meta from '../components/Meta.astro';
 import '../styles/global.css';
 
 interface Props {
@@ -19,7 +20,7 @@ const contenido = pagina.data;
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{titulo} · {contenido.negocio_nombre}</title>
-    {!indexar && <meta name="robots" content="noindex, follow" />}
+    <Meta titulo={`${titulo} · ${contenido.negocio_nombre}`} descripcion={contenido.seo_descripcion} indexar={indexar} />
   </head>
   <body>
     <header class="cabecera">

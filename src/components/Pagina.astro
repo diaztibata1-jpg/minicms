@@ -4,6 +4,7 @@ import Contacto from './Contacto.astro';
 import Hero from './Hero.astro';
 import Servicios from './Servicios.astro';
 import Editor from './Editor.astro';
+import Meta from './Meta.astro';
 import '../styles/global.css';
 
 interface Props {
@@ -21,9 +22,8 @@ const contenido = pagina.data;
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content={contenido.hero_texto} />
     <title>{contenido.negocio_nombre}</title>
-    {edicion === 'nube' && <meta name="robots" content="noindex, nofollow" />}
+    <Meta titulo={contenido.negocio_nombre} descripcion={contenido.seo_descripcion} indexar={edicion !== 'nube'} negocioLocal={!edicion} />
   </head>
   <body>
     <header class="cabecera">

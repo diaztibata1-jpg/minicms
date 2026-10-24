@@ -1,5 +1,10 @@
 ---
 // Formulario de contacto. Envía a /api/contacto (functions/api/contacto.js), que guarda en la hoja de Google.
+interface Props {
+  negocio: string;
+}
+
+const { negocio } = Astro.props;
 ---
 
 <form class="formulario" method="post" action="/api/contacto" data-formulario>
@@ -24,7 +29,10 @@
   </label>
   <label class="formulario__autorizacion">
     <input name="autorizacion" type="checkbox" value="si" required />
-    <span>Autorizo el tratamiento de mis datos personales para que me contacten.</span>
+    <span>
+      Autorizo a {negocio} a tratar mis datos personales para responder mi solicitud y contactarme, según la
+      <a href="/politica-de-datos" target="_blank" rel="noopener">política de tratamiento de datos</a>.
+    </span>
   </label>
   <button class="boton formulario__boton" type="submit">Enviar</button>
   <p class="formulario__mensaje" role="status" aria-live="polite"></p>
@@ -52,6 +60,7 @@
       formulario.reset();
       mensaje.dataset.estado = 'ok';
       mensaje.textContent = '¡Gracias! Te contactaremos pronto.';
+      window.location.assign('/gracias/');
     } catch (error) {
       mensaje.dataset.estado = 'error';
       mensaje.textContent = error instanceof TypeError

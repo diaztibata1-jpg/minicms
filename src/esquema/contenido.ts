@@ -20,6 +20,15 @@ export function crearEsquemaPagina<T extends z.ZodType>(imagen: T) {
     whatsapp: z.string().regex(/^573\d{9}$/, { error: 'WhatsApp debe ser un celular colombiano: 57 seguido de 10 dígitos que empiezan por 3.' }),
     direccion: z.string().min(1, { error: 'La dirección no puede estar vacía.' }).max(160, { error: 'La dirección no puede superar los 160 caracteres.' }),
     horario: z.string().min(1, { error: 'El horario no puede estar vacío.' }).max(120, { error: 'El horario no puede superar los 120 caracteres.' }),
+    // Datos de la política de tratamiento de datos. No se editan desde el editor visual.
+    legal: z.object({
+      responsable: z.string().min(1).max(120),
+      documento: z.string().min(1).max(40),
+      correo: z.email().max(120),
+      ciudad: z.string().min(1).max(60),
+      // El editor reescribe el YAML sin comillas y Astro lo lee como fecha; se aceptan ambas formas.
+      vigencia: z.union([z.date(), z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { error: 'La vigencia debe tener formato AAAA-MM-DD.' })]),
+    }).strict(),
   }).strict();
 }
 

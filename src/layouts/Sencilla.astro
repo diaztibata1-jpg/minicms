@@ -1,0 +1,37 @@
+---
+// Páginas secundarias (gracias, política de datos, 404): misma cabecera y pie que la principal.
+import { getCollection } from 'astro:content';
+import '../styles/global.css';
+
+interface Props {
+  titulo: string;
+  indexar?: boolean;
+}
+
+const { titulo, indexar = false } = Astro.props;
+const [pagina] = await getCollection('paginas');
+const contenido = pagina.data;
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{titulo} · {contenido.negocio_nombre}</title>
+    {!indexar && <meta name="robots" content="noindex, follow" />}
+  </head>
+  <body>
+    <header class="cabecera">
+      <a class="marca" href="/">{contenido.negocio_nombre}</a>
+      <a class="cabecera__enlace" href="/#contacto">Contacto <span aria-hidden="true">↗</span></a>
+    </header>
+    <main class="sencilla">
+      <slot />
+    </main>
+    <footer class="pie">
+      <span>{contenido.negocio_nombre}</span>
+      <a href="/politica-de-datos">Política de tratamiento de datos</a>
+    </footer>
+  </body>
+</html>

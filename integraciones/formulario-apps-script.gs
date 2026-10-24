@@ -7,7 +7,7 @@
 // 3. Implementar > Nueva implementación > Aplicación web: ejecutar como "Yo", acceso "Cualquier usuario".
 //    La URL (termina en /exec) va en FORMULARIO_URL en Cloudflare.
 const HOJA = 'Contactos';
-const ENCABEZADOS = ['Fecha', 'Nombre', 'Teléfono', 'Correo', 'Estado'];
+const ENCABEZADOS = ['Fecha', 'Nombre', 'Teléfono', 'Correo', 'Estado', 'Autorización datos'];
 const ESTADOS = ['Nuevo', 'Contactado', 'Cotizado', 'Cliente', 'No interesado'];
 const ZONA = 'America/Bogota';
 const HORA_INICIO = 7;
@@ -60,7 +60,7 @@ function doPost(e) {
 
   // El teléfono va siempre como texto para que Sheets no lo convierta en número.
   const telefono = limpiar(datos.telefono, 20);
-  const fila = [new Date(), limpiar(datos.nombre, 80), telefono.startsWith("'") ? telefono : `'${telefono}`, limpiar(datos.correo, 120), 'Nuevo'];
+  const fila = [new Date(), limpiar(datos.nombre, 80), telefono.startsWith("'") ? telefono : `'${telefono}`, limpiar(datos.correo, 120), 'Nuevo', limpiar(datos.autorizacion, 10)];
   const candado = LockService.getScriptLock();
   candado.waitLock(20000);
   try {

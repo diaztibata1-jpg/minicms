@@ -2,8 +2,13 @@ const editorRoot = document.querySelector('#editor-visual');
 
 if (editorRoot) {
   const limites = JSON.parse(editorRoot.dataset.limites || '{}');
+  // local: el servidor de Astro guarda en disco y abre el PR. nube: todo se envía junto al publicar.
+  const enNube = editorRoot.dataset.modo === 'nube';
+  const api = editorRoot.dataset.api || '/__editor';
   const cambios = new Map();
   const imagenes = new Map();
+  // Solo en la nube: imágenes convertidas en el navegador, pendientes de publicar (nombre → base64).
+  const imagenesNuevas = new Map();
   const estilo = document.createElement('style');
   estilo.textContent = `
     [data-campo][contenteditable="plaintext-only"]:hover,
@@ -93,9 +98,22 @@ if (editorRoot) {
   const botonGuardar = barra.querySelector('[data-guardar]');
   const botonEnviar = barra.querySelector('[data-enviar]');
   const botonWhatsapp = barra.querySelector('[data-whatsapp]');
+  if (enNube) {
+    botonGuardar.hidden = true;
+    botonEnviar.textContent = 'Publicar cambios';
+    barra.querySelector('.editor-barra__acciones').style.gridTemplateColumns = '1fr 1fr';
+    window.addEventListener('beforeunload', (evento) => {
+      if (cambios.size) evento.preventDefault();
+    });
+  }
   const marcarEnvioPendiente = () => sessionStorage.getItem('editor-cambios-guardados') === '1';
 
   const actualizarBarra = () => {
+    if (enNube) {
+      mensaje.textContent = cambios.size ? 'Hay cambios sin publicar.' : 'No hay cambios pendientes.';
+      botonEnviar.disabled = !cambios.size;
+      return;
+    }
     const sinGuardar = cambios.size > 0;
     mensaje.textContent = sinGuardar
       ? 'Hay cambios sin guardar.'
@@ -153,6 +171,47 @@ if (editorRoot) {
     panel.close();
   };
 
+  const nombreImagen = (archivo, extension) => {
+    const base = archivo.name.replace(/\.[^.]+$/, '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'imagen';
+    const ahora = new Date();
+    const dos = (numero) => String(numero).padStart(2, '0');
+    const sello = `${ahora.getFullYear()}-${dos(ahora.getMonth() + 1)}-${dos(ahora.getDate())}-${dos(ahora.getHours())}${dos(ahora.getMinutes())}`;
+    return `${base}-${sello}-${crypto.randomUUID().slice(0, 8)}.${extension}`;
+  };
+
+  // En la nube no hay sharp: el navegador reduce la imagen a 1600 px y menos de 400 KB.
+  // Usa WebP si el navegador lo genera; si no (Safari), JPG. Astro la optimiza igual al compilar.
+  const prepararImagen = async (archivo) => {
+    const mapa = await createImageBitmap(archivo);
+    let ancho = Math.min(mapa.width, 1600);
+    let blob;
+    try {
+      for (;;) {
+        const lienzo = document.createElement('canvas');
+        lienzo.width = ancho;
+        lienzo.height = Math.round(mapa.height * (ancho / mapa.width));
+        lienzo.getContext('2d').drawImage(mapa, 0, 0, lienzo.width, lienzo.height);
+        blob = await new Promise((listo) => lienzo.toBlob(listo, 'image/webp', 0.8));
+        if (!blob || blob.type !== 'image/webp') {
+          blob = await new Promise((listo) => lienzo.toBlob(listo, 'image/jpeg', 0.8));
+        }
+        if (!blob) throw new Error('No se pudo procesar la imagen.');
+        if (blob.size <= 400 * 1024 || ancho <= 480) break;
+        ancho = Math.max(480, Math.floor(ancho * 0.8));
+      }
+    } finally {
+      mapa.close();
+    }
+    if (blob.size > 400 * 1024) throw new Error('La imagen no se pudo reducir a menos de 400 KB. Prueba con otra imagen.');
+    const nombre = nombreImagen(archivo, blob.type === 'image/webp' ? 'webp' : 'jpg');
+    const bytes = new Uint8Array(await blob.arrayBuffer());
+    let binario = '';
+    for (let i = 0; i < bytes.length; i += 0x8000) binario += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+    imagenesNuevas.set(nombre, btoa(binario));
+    return { nombre, path: `../../assets/editor/${nombre}`, url: URL.createObjectURL(blob) };
+  };
+
   const abrirPanelImagen = async (elemento) => {
     panel.innerHTML = '';
     const contenido = document.createElement('div');
@@ -196,7 +255,11 @@ if (editorRoot) {
         if (pixeles > 80_000_000) {
           throw new Error('La imagen es demasiado grande (más de 80 megapíxeles). Usa una más pequeña.');
         }
-        const respuesta = await fetch('/__editor/imagen', { method: 'POST', body: datos });
+        if (enNube) {
+          cambiarImagen(elemento, await prepararImagen(archivo));
+          return;
+        }
+        const respuesta = await fetch(`${api}/imagen`, { method: 'POST', body: datos });
         const resultado = await respuesta.json();
         if (!respuesta.ok) throw new Error(resultado.error || 'No se pudo subir la imagen.');
         cambiarImagen(elemento, resultado);
@@ -218,7 +281,7 @@ if (editorRoot) {
     panel.append(contenido);
 
     try {
-      const respuesta = await fetch('/__editor/imagenes');
+      const respuesta = await fetch(`${api}/imagenes`);
       const resultado = await respuesta.json();
       if (!respuesta.ok) throw new Error(resultado.error || 'No se pudo cargar la biblioteca.');
       resultado.imagenes.forEach((seleccion) => {
@@ -355,7 +418,7 @@ if (editorRoot) {
     mensaje.textContent = 'Guardando cambios…';
     mensaje.classList.remove('editor-error');
     try {
-      const respuesta = await fetch('/__editor/guardar', {
+      const respuesta = await fetch(`${api}/guardar`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(Object.fromEntries(cambios)),
@@ -384,7 +447,7 @@ if (editorRoot) {
     for (let intento = 0; intento < 60; intento += 1) {
       await new Promise((listo) => setTimeout(listo, 5000));
       try {
-        const respuesta = await fetch(`/__editor/estado?pr=${encodeURIComponent(numero)}`, { cache: 'no-store' });
+        const respuesta = await fetch(`${api}/estado?pr=${encodeURIComponent(numero)}`, { cache: 'no-store' });
         const { estado } = await respuesta.json();
         if (estado === 'publicado') {
           mensaje.textContent = '✓ Cambios publicados. El sitio se actualiza en unos minutos.';
@@ -402,7 +465,42 @@ if (editorRoot) {
   };
 
   botonGuardar.addEventListener('click', () => guardar(true));
+  const publicar = async () => {
+    botonEnviar.disabled = true;
+    barra.setAttribute('aria-busy', 'true');
+    mensaje.textContent = 'Enviando cambios…';
+    mensaje.classList.remove('editor-error');
+    try {
+      const datos = Object.fromEntries(cambios);
+      // Solo viajan las imágenes nuevas que siguen en uso.
+      const usadas = new Set(Object.values(datos));
+      const nuevas = [...imagenesNuevas].filter(([nombre]) => usadas.has(`../../assets/editor/${nombre}`))
+        .map(([nombre, contenido]) => ({ nombre, contenido }));
+      const respuesta = await fetch(`${api}/publicar`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cambios: datos, imagenes: nuevas }),
+      });
+      const resultado = await respuesta.json().catch(() => ({}));
+      if (!respuesta.ok) throw new Error(resultado.error || 'No se pudieron enviar los cambios.');
+      cambios.clear();
+      imagenesNuevas.clear();
+      actualizarBarra();
+      mensaje.textContent = 'Cambios enviados. Revisando que todo esté en orden…';
+      if (resultado.numero) void seguirEstado(resultado.numero);
+    } catch (error) {
+      mostrarError(error.message);
+      botonEnviar.disabled = false;
+    } finally {
+      barra.removeAttribute('aria-busy');
+    }
+  };
+
   botonEnviar.addEventListener('click', async () => {
+    if (enNube) {
+      await publicar();
+      return;
+    }
     if (cambios.size) await guardar(false);
     if (cambios.size || !marcarEnvioPendiente()) return;
     botonEnviar.disabled = true;
@@ -410,7 +508,7 @@ if (editorRoot) {
     mensaje.textContent = 'Enviando cambios…';
     mensaje.classList.remove('editor-error');
     try {
-      const respuesta = await fetch('/__editor/enviar', { method: 'POST' });
+      const respuesta = await fetch(`${api}/enviar`, { method: 'POST' });
       const resultado = await respuesta.json();
       if (!respuesta.ok) throw new Error(resultado.error || 'No se pudieron enviar los cambios.');
       sessionStorage.removeItem('editor-cambios-guardados');

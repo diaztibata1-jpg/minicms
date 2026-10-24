@@ -40,3 +40,14 @@ El editor solo funciona con `npm run editar`. El sitio generado por `npm run bui
 Si la fusión automática usa el `GITHUB_TOKEN` predeterminado, el push que hace GitHub al fusionar no dispara otros workflows, por ejemplo uno de despliegue. Para que ese push pueda activar otros workflows, se necesita un token de GitHub App o un token personal con los permisos adecuados.
 
 Esta prueba no incluye despliegue.
+## Editor en línea (/editar)
+
+El sitio publicado incluye el editor en `/editar` (no indexado). Funciona sin Codespaces: las imágenes se reducen en el navegador y la API de `functions/api/editor/` crea la rama y el pull request con la API de GitHub. El flujo de validación, fusión y despliegue es el mismo.
+
+Configuración (una vez por sitio):
+
+1. **Token de GitHub:** fine-grained, solo para este repositorio, con **Contents** y **Pull requests** en *Read and write*.
+2. **Cloudflare Access:** en Zero Trust crea una aplicación *Self-hosted* para el dominio del sitio con dos rutas, `editar` y `api/editor`, y una política *Allow* con el correo del cliente (login con código de un solo uso por correo). Copia el **Application Audience (AUD) Tag** y el dominio del equipo (`https://<equipo>.cloudflareaccess.com`).
+3. **Variables del proyecto en Cloudflare Pages** (Settings > Variables and secrets, entorno Production): `EDITOR_GITHUB_TOKEN` (secreto), `ACCESS_TEAM_DOMAIN` y `ACCESS_AUD`. Opcional: `GITHUB_REPO` (por defecto `diaztibata1-jpg/minicms`).
+
+Si falta alguna variable, la API responde que el editor no está configurado y no publica nada.

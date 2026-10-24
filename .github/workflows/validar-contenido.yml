@@ -36,14 +36,14 @@ jobs:
           fuera_de_alcance=()
           while IFS= read -r archivo; do
             [[ -z "$archivo" ]] && continue
-            if [[ ! "$archivo" =~ ^src/content/paginas/[^/]+\.md$ && ! "$archivo" =~ ^src/assets/editor/[a-z0-9-]+\.webp$ ]]; then
+            if [[ ! "$archivo" =~ ^src/content/paginas/[^/]+\.md$ && ! "$archivo" =~ ^src/assets/editor/[a-z0-9-]+\.(webp|jpg)$ ]]; then
               fuera_de_alcance+=("$archivo")
             fi
           done < <(git diff --name-only "$BASE_SHA...$HEAD_SHA")
           if (( ${#fuera_de_alcance[@]} > 0 )); then
             {
               echo '## ❌ Archivos no permitidos'
-              echo 'El pull request solo puede cambiar archivos `.md` de `src/content/paginas/` e imágenes `.webp` de `src/assets/editor/`.'
+              echo 'El pull request solo puede cambiar archivos `.md` de `src/content/paginas/` e imágenes `.webp` o `.jpg` de `src/assets/editor/`.'
               printf -- '- `%s`\n' "${fuera_de_alcance[@]}"
             } >> "$GITHUB_STEP_SUMMARY"
             exit 1
@@ -86,12 +86,14 @@ jobs:
           errores=()
           while IFS= read -r archivo; do
             [[ -z "$archivo" ]] && continue
-            if [[ "$archivo" != *.webp ]]; then
-              errores+=("$archivo: las imágenes nuevas deben estar en formato WebP.")
+            if [[ "$archivo" != *.webp && "$archivo" != *.jpg ]]; then
+              errores+=("$archivo: las imágenes nuevas deben estar en formato WebP o JPG.")
             elif [[ -f "$archivo" ]]; then
               tipo=$(file --brief --mime-type "$archivo")
-              if [[ "$tipo" != image/webp ]]; then
-                errores+=("$archivo: el contenido real no es una imagen WebP válida.")
+              esperado=image/webp
+              [[ "$archivo" == *.jpg ]] && esperado=image/jpeg
+              if [[ "$tipo" != "$esperado" ]]; then
+                errores+=("$archivo: el contenido real no coincide con su formato.")
               fi
               bytes=$(wc -c < "$archivo")
               if (( bytes > 409600 )); then
@@ -107,7 +109,7 @@ jobs:
             exit 1
           fi
           echo '## ✅ Imágenes nuevas válidas' >> "$GITHUB_STEP_SUMMARY"
-          echo 'Todas las imágenes nuevas o reemplazadas son WebP y pesan como máximo 400 KB.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Todas las imágenes nuevas o reemplazadas son WebP o JPG y pesan como máximo 400 KB.' >> "$GITHUB_STEP_SUMMARY"
 
       - name: Instalar dependencias
         id: instalar

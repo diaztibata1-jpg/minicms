@@ -50,10 +50,35 @@ export async function bloqueado(request, env) {
   return Number(await env.EDITOR_KV.get(claveIntentos(request))) >= intentosMaximos;
 }
 
+// Devuelve true en el intento que deja bloqueada la IP, para avisar una sola vez.
 export async function registrarFallo(request, env) {
+  let recienBloqueada = false;
   if (env.EDITOR_KV) {
     const intentos = Number(await env.EDITOR_KV.get(claveIntentos(request))) + 1;
     await env.EDITOR_KV.put(claveIntentos(request), String(intentos), { expirationTtl: bloqueoSegundos });
+    recienBloqueada = intentos === intentosMaximos;
   }
   await new Promise((resolver) => setTimeout(resolver, 1000));
+  return recienBloqueada;
+}
+
+// Cloudflare Turnstile ("no soy un robot"). Sin TURNSTILE_SITE_KEY y TURNSTILE_SECRET no se exige.
+export const turnstileActivo = (env) => Boolean(env.TURNSTILE_SITE_KEY && env.TURNSTILE_SECRET);
+
+export async function humanoVerificado(request, env, token) {
+  if (!turnstileActivo(env)) return true;
+  if (typeof token !== 'string' || !token) return false;
+  const datos = new FormData();
+  datos.append('secret', env.TURNSTILE_SECRET);
+  datos.append('response', token);
+  const ip = request.headers.get('CF-Connecting-IP');
+  if (ip) datos.append('remoteip', ip);
+  try {
+    const respuesta = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', { method: 'POST', body: datos });
+    const resultado = await respuesta.json();
+    return resultado.success === true;
+  } catch (error) {
+    console.error('Turnstile', error);
+    return false;
+  }
 }

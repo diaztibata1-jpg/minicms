@@ -9,6 +9,7 @@
 import { parse, stringify } from 'yaml';
 import { z } from 'zod';
 import { camposImagen, crearEsquemaPagina, limitesCampos } from '../../../src/esquema/contenido';
+import { avisar } from '../../../src/servidor/avisos.js';
 import { editorConfigurado, sesionValida } from '../../../src/servidor/sesion.js';
 
 const archivoContenido = 'src/content/paginas/inicio.md';
@@ -236,7 +237,8 @@ async function servirImagen(nombre, github) {
   });
 }
 
-export async function onRequest({ request, env, params }) {
+export async function onRequest(contexto) {
+  const { request, env, params } = contexto;
   try {
     if (!editorConfigurado(env)) throw new ErrorEditor('El editor no está configurado.', 503);
     if (!(await sesionValida(request, env))) throw new ErrorEditor('Tu sesión venció. Recarga la página para entrar de nuevo.', 401);
@@ -247,7 +249,9 @@ export async function onRequest({ request, env, params }) {
     if (request.method === 'POST' && ruta === 'publicar') {
       // Evita envíos desde otros sitios con la sesión del usuario.
       if (request.headers.get('Origin') !== url.origin) throw new ErrorEditor('La solicitud no proviene de este sitio.', 403);
-      return await publicar(request, github);
+      const respuesta = await publicar(request, github);
+      avisar(contexto, 'Cambios enviados desde el editor', 'Se enviaron cambios desde el editor. Si pasan la validación, se publican en unos minutos.');
+      return respuesta;
     }
     if (request.method === 'GET' && ruta === 'estado') return await estado(url, github);
     if (request.method === 'GET' && ruta === 'imagenes') return await listarImagenes(github);

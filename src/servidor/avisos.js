@@ -1,7 +1,7 @@
-// Avisos por correo con Resend. Sin RESEND_API_KEY y AVISOS_CORREO no se envía nada.
-// Sin dominio propio en Resend, AVISOS_CORREO debe ser el correo de la cuenta de Resend.
+// Avisos por correo con un Apps Script de Google (integraciones/avisos-apps-script.gs), que envía
+// desde el Gmail de quien lo publicó. Sin AVISOS_URL y AVISOS_CLAVE no se envía nada.
 export function avisar({ request, env, waitUntil }, asunto, detalle) {
-  if (!env.RESEND_API_KEY || !env.AVISOS_CORREO) return;
+  if (!env.AVISOS_URL || !env.AVISOS_CLAVE) return;
   const sitio = new URL(request.url).hostname;
   const fecha = new Date().toLocaleString('es-CO', { timeZone: 'America/Bogota', dateStyle: 'medium', timeStyle: 'short' });
   const ip = request.headers.get('CF-Connecting-IP') ?? 'desconocida';
@@ -15,20 +15,17 @@ export function avisar({ request, env, waitUntil }, asunto, detalle) {
     `Navegador: ${request.headers.get('User-Agent') ?? 'desconocido'}`,
   ].join('\n');
 
-  const envio = fetch('https://api.resend.com/emails', {
+  // Apps Script responde con una redirección después de ejecutar doPost; no hace falta seguirla.
+  const envio = fetch(env.AVISOS_URL, {
     method: 'POST',
-    headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      from: env.AVISOS_REMITENTE || 'Editor <onboarding@resend.dev>',
-      to: [env.AVISOS_CORREO],
-      subject: `${asunto} · ${sitio}`,
-      text: texto,
-    }),
+    redirect: 'manual',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ clave: env.AVISOS_CLAVE, asunto: `${asunto} · ${sitio}`, texto }),
   })
     .then(async (respuesta) => {
-      if (!respuesta.ok) console.error('Resend', respuesta.status, await respuesta.text());
+      if (respuesta.status >= 400) console.error('Avisos', respuesta.status, await respuesta.text());
     })
-    .catch((error) => console.error('Resend', error));
+    .catch((error) => console.error('Avisos', error));
   // El correo sale en segundo plano para no demorar la respuesta.
   if (waitUntil) waitUntil(envio);
 }

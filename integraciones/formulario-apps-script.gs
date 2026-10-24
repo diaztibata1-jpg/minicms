@@ -44,7 +44,8 @@ function configurar() {
   ScriptApp.getProjectTriggers()
     .filter((disparador) => disparador.getHandlerFunction() === 'avisarNuevos')
     .forEach((disparador) => ScriptApp.deleteTrigger(disparador));
-  ScriptApp.newTrigger('avisarNuevos').timeBased().everyHours(1).create();
+  // Google no da hora exacta: nearMinute(0) lo deja cerca de la hora en punto (unos 15 minutos de margen) en vez de un minuto al azar.
+  ScriptApp.newTrigger('avisarNuevos').timeBased().everyHours(1).nearMinute(0).create();
 }
 
 // Reemplaza los colores de la columna Estado; se puede correr varias veces sin duplicar reglas.

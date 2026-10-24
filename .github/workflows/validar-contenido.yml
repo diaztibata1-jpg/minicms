@@ -182,22 +182,25 @@ jobs:
     if: startsWith(github.event.pull_request.head.ref, 'cambios/') && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     permissions:
+      actions: write
       contents: write
       pull-requests: write
     steps:
-      - name: Activar fusión automática
+      - name: Fusionar y lanzar el despliegue
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_URL: ${{ github.event.pull_request.html_url }}
         run: |
-          if gh pr merge --auto --squash --delete-branch "$PR_URL"; then
-            echo '## ✅ Fusión automática activada' >> "$GITHUB_STEP_SUMMARY"
-            echo 'El pull request se fusionará cuando se cumplan las protecciones de `main`.' >> "$GITHUB_STEP_SUMMARY"
-          else
-            echo '## ❌ No se pudo activar la fusión automática' >> "$GITHUB_STEP_SUMMARY"
-            echo 'Comprueba que **Allow auto-merge** esté activado en Settings y que `main` tenga un ruleset que exija el check `validar-contenido`.' >> "$GITHUB_STEP_SUMMARY"
+          # La validación ya pasó (needs: validar), así que se fusiona de una vez.
+          if ! gh pr merge --squash --delete-branch "$PR_URL"; then
+            echo '## ❌ No se pudo fusionar' >> "$GITHUB_STEP_SUMMARY"
+            echo 'Comprueba el ruleset de `main` y que el pull request no tenga conflictos.' >> "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
+          echo '## ✅ Fusionado' >> "$GITHUB_STEP_SUMMARY"
+          # Una fusión con GITHUB_TOKEN no dispara push; el despliegue se lanza a mano.
+          gh workflow run desplegar.yml --ref main --repo "$GITHUB_REPOSITORY"
+          echo '## ✅ Despliegue lanzado' >> "$GITHUB_STEP_SUMMARY"
 
   rechazar:
     name: rechazo-automatico

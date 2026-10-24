@@ -1,0 +1,49 @@
+name: Desplegar en Cloudflare Pages
+
+# Se dispara al llegar cambios a main y también desde la fusión automática,
+# porque una fusión hecha con GITHUB_TOKEN no dispara el evento push.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: desplegar
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  desplegar:
+    name: desplegar
+    runs-on: ubuntu-latest
+    env:
+      PROYECTO: minicms
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+
+      - name: Instalar y compilar
+        run: |
+          npm ci
+          npm run build
+
+      - name: Publicar en Cloudflare Pages
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [[ -z "$CLOUDFLARE_API_TOKEN" || -z "$CLOUDFLARE_ACCOUNT_ID" ]]; then
+            echo '## ❌ Faltan los secretos CLOUDFLARE_API_TOKEN y CLOUDFLARE_ACCOUNT_ID' >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          # La primera vez el proyecto no existe; si ya existe, este comando falla y se sigue.
+          npx --yes wrangler@4 pages project create "$PROYECTO" --production-branch=main || true
+          npx --yes wrangler@4 pages deploy dist --project-name="$PROYECTO" --branch=main
+          echo "## ✅ Publicado en https://$PROYECTO.pages.dev" >> "$GITHUB_STEP_SUMMARY"

@@ -79,7 +79,8 @@ export async function onRequest(contexto) {
       return paginaLogin(env, 'Contraseña incorrecta.', 401);
     }
     avisar(contexto, 'Ingreso al editor', 'Alguien entró al editor con la contraseña correcta.');
-    return new Response(null, { status: 303, headers: { ...cabecerasSeguras, Location: '/editar/', 'Set-Cookie': await crearCookie(env) } });
+    // Vuelve a la página que pidió la contraseña (el editor o la firma); siempre es una ruta de /editar.
+    return new Response(null, { status: 303, headers: { ...cabecerasSeguras, Location: url.pathname, 'Set-Cookie': await crearCookie(env) } });
   }
 
   if (!(await sesionValida(request, env))) return paginaLogin(env);

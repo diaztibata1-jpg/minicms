@@ -1,8 +1,9 @@
 ---
-// Firmas de correo listas para copiar y pegar en Gmail u Outlook. Página oculta: no se indexa ni se enlaza.
+// Firmas de correo listas para copiar y pegar en Gmail u Outlook. Vive dentro de /editar, así que pide la misma contraseña del editor.
+// El logo (/firma/logo.png) sí queda público: Gmail lo carga desde el correo de quien recibe.
 // La firma usa tablas y estilos en línea porque los clientes de correo ignoran las hojas de estilo.
 import { getCollection } from 'astro:content';
-import Sencilla from '../../layouts/Sencilla.astro';
+import Sencilla from '../../../layouts/Sencilla.astro';
 
 const [pagina] = await getCollection('paginas');
 const contenido = pagina.data;

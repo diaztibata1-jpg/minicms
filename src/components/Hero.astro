@@ -30,6 +30,9 @@ const { contenido } = Astro.props;
       src={contenido.hero_imagen}
       alt={contenido.hero_titulo}
       widths={[600, 900, 1200]}
+      quality={70}
+      loading="eager"
+      fetchpriority="high"
       sizes="(max-width: 800px) 100vw, 52vw"
       data-campo-imagen="hero_imagen"
     />

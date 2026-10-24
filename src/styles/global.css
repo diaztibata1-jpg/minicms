@@ -3,6 +3,8 @@
   --tinta: #203b32;
   --verde: #355d4a;
   --coral: #cf6546;
+  /* Coral más oscuro para texto pequeño y botones: llega al contraste mínimo de lectura (4.5). */
+  --coral-texto: #b24e2e;
   --papel: #f5f0e6;
   --papel-claro: #fbf9f4;
   --linea: #d9d4c8;
@@ -70,7 +72,7 @@ a {
 
 .hero__etiqueta,
 .seccion__numero {
-  color: var(--coral);
+  color: var(--coral-texto);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -266,7 +268,7 @@ h1 {
 }
 
 .contacto .seccion__numero {
-  color: #f0a17f;
+  color: #f8c4ac;
 }
 
 .contacto h2 {
@@ -391,7 +393,7 @@ h1 {
   justify-self: start;
   border: 0;
   color: white;
-  background: var(--coral);
+  background: var(--coral-texto);
   cursor: pointer;
 }
 

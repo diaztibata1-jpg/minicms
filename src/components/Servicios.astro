@@ -28,6 +28,7 @@ const { titulo, servicios } = Astro.props;
             src={servicio.imagen}
             alt={servicio.titulo}
             widths={[420, 700]}
+            quality={70}
             sizes="(max-width: 700px) 90vw, 30vw"
             data-campo-imagen={`servicios.${indice}.imagen`}
           />

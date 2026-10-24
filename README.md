@@ -57,3 +57,17 @@ Configuración (una vez por sitio):
 Las variables nuevas aplican desde el siguiente despliegue.
 
 Si falta alguna variable o la contraseña es corta, `/editar` muestra que el editor no está configurado y la API no publica nada.
+
+## Formulario de contacto (Google Sheets)
+
+El formulario de la sección de contacto envía a `functions/api/contacto.js`, que valida los datos y los reenvía a un Apps Script de la hoja del cliente. La hoja guarda Fecha, Nombre, Teléfono, Correo y Estado (desplegable: Nuevo, Contactado, Cotizado, Cliente, No interesado). Cada hora, entre 7 a. m. y 9 p. m., el script manda un solo correo con los contactos nuevos, si los hay.
+
+Protecciones: campo trampa contra bots, autorización de datos obligatoria, validación en el servidor, máximo 5 envíos por hora por IP (si el KV `EDITOR_KV` está enlazado) y los textos que empiezan como fórmula se guardan como texto.
+
+Configuración (una vez por sitio):
+
+1. En la hoja del cliente: **Extensiones > Apps Script**, pega `integraciones/formulario-apps-script.gs`.
+2. **Configuración del proyecto > Propiedades del script:** `CLAVE` (texto largo al azar) y `AVISOS_PARA` (correo o correos, separados por coma).
+3. Elige la función `configurar` y dale **Ejecutar**. Autoriza los permisos (en "Google no ha verificado esta app": Configuración avanzada > Ir a … > Permitir).
+4. **Implementar > Nueva implementación > Aplicación web:** ejecutar como "Yo", acceso "Cualquier usuario". Copia la URL.
+5. En Cloudflare Pages agrega como secretos `FORMULARIO_URL` (la URL) y `FORMULARIO_CLAVE` (el mismo texto de `CLAVE`) y vuelve a desplegar.

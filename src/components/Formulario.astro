@@ -1,0 +1,64 @@
+---
+// Formulario de contacto. Envía a /api/contacto (functions/api/contacto.js), que guarda en la hoja de Google.
+---
+
+<form class="formulario" method="post" action="/api/contacto" data-formulario>
+  <div class="formulario__campos">
+    <label>
+      <span>Nombre</span>
+      <input name="nombre" type="text" autocomplete="name" required minlength="2" maxlength="80" />
+    </label>
+    <label>
+      <span>Teléfono</span>
+      <input name="telefono" type="tel" autocomplete="tel" inputmode="tel" required pattern="[0-9+() \-]{7,20}" maxlength="20" />
+    </label>
+    <label>
+      <span>Correo</span>
+      <input name="correo" type="email" autocomplete="email" required maxlength="120" />
+    </label>
+  </div>
+  <!-- Campo trampa: las personas no lo ven; si llega lleno, el envío es de un bot. -->
+  <label class="formulario__trampa" aria-hidden="true">
+    Empresa
+    <input name="empresa" type="text" tabindex="-1" autocomplete="off" />
+  </label>
+  <label class="formulario__autorizacion">
+    <input name="autorizacion" type="checkbox" value="si" required />
+    <span>Autorizo el tratamiento de mis datos personales para que me contacten.</span>
+  </label>
+  <button class="boton formulario__boton" type="submit">Enviar</button>
+  <p class="formulario__mensaje" role="status" aria-live="polite"></p>
+</form>
+
+<script>
+  const formulario = document.querySelector<HTMLFormElement>('[data-formulario]');
+  const mensaje = formulario?.querySelector<HTMLElement>('.formulario__mensaje');
+  const boton = formulario?.querySelector<HTMLButtonElement>('button[type="submit"]');
+
+  formulario?.addEventListener('submit', async (evento) => {
+    if (evento.defaultPrevented || !mensaje || !boton) return;
+    evento.preventDefault();
+    boton.disabled = true;
+    mensaje.dataset.estado = '';
+    mensaje.textContent = 'Enviando…';
+    try {
+      const respuesta = await fetch(formulario.action, {
+        method: 'POST',
+        body: new FormData(formulario),
+        headers: { Accept: 'application/json' },
+      });
+      const datos = await respuesta.json().catch(() => ({}));
+      if (!respuesta.ok) throw new Error(datos.error || 'No se pudo enviar. Intenta de nuevo o escríbenos por WhatsApp.');
+      formulario.reset();
+      mensaje.dataset.estado = 'ok';
+      mensaje.textContent = '¡Gracias! Te contactaremos pronto.';
+    } catch (error) {
+      mensaje.dataset.estado = 'error';
+      mensaje.textContent = error instanceof TypeError
+        ? 'No hay conexión. Intenta de nuevo o escríbenos por WhatsApp.'
+        : (error as Error).message;
+    } finally {
+      boton.disabled = false;
+    }
+  });
+</script>

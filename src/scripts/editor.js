@@ -332,6 +332,10 @@ if (editorRoot) {
     const enlace = evento.target.closest('a[href]');
     if (enlace && !enlace.closest('.editor-barra, .editor-panel')) evento.preventDefault();
   }, true);
+  // Tampoco se envía el formulario de contacto mientras se edita.
+  document.addEventListener('submit', (evento) => {
+    if (evento.target.closest('[data-formulario]')) evento.preventDefault();
+  }, true);
 
   const numeroActual = () => {
     const enlace = document.querySelector('a[href*="wa.me/"]');

@@ -1,4 +1,6 @@
 ---
+import Formulario from './Formulario.astro';
+
 interface Props {
   titulo: string;
   texto: string;
@@ -31,4 +33,5 @@ const whatsappVisible = `+57 ${whatsapp.slice(2, 5)} ${whatsapp.slice(5, 8)} ${w
       <p data-campo="horario">{horario}</p>
     </div>
   </div>
+  <Formulario />
 </section>

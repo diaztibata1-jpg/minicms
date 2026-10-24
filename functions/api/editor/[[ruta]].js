@@ -236,7 +236,10 @@ async function estado(url, github) {
   if (!pr.head?.ref?.startsWith('cambios/')) throw new ErrorEditor('Número de envío no válido.');
   if (pr.merged) return json({ estado: 'publicado' });
   if (pr.state === 'closed') return json({ estado: 'rechazado' });
-  const { check_runs: checks = [] } = await github(`commits/${pr.head.sha}/check-runs`);
+  // Un token fine-grained no puede leer checks; si no hay acceso, basta con esperar
+  // a que rechazo-automatico cierre el envío.
+  const respuesta = await github(`commits/${pr.head.sha}/check-runs`, { crudo: true });
+  const { check_runs: checks = [] } = respuesta.ok ? await respuesta.json() : {};
   const fallo = checks.some((check) => ['failure', 'cancelled', 'timed_out', 'action_required'].includes(check.conclusion));
   return json({ estado: fallo ? 'rechazado' : 'revisando' });
 }

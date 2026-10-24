@@ -1,10 +1,20 @@
 // Pide la contraseña del editor antes de mostrar /editar.
 import { avisar } from '../../src/servidor/avisos.js';
 import {
-  bloqueado, contrasenaCorrecta, crearCookie, editorConfigurado, humanoVerificado, registrarFallo, sesionValida, turnstileActivo,
+  bloqueado, contrasenaCorrecta, cookieVencida, crearCookie, editorConfigurado, humanoVerificado, registrarFallo, sesionValida, turnstileActivo,
 } from '../../src/servidor/sesion.js';
 
 const escapar = (texto) => texto.replace(/[&<>"]/g, (caracter) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[caracter]);
+
+// Nadie puede mostrar el editor dentro de otra página (evita clics engañosos).
+const cabecerasSeguras = {
+  'X-Frame-Options': 'DENY',
+  'Content-Security-Policy': "frame-ancestors 'none'",
+  'X-Content-Type-Options': 'nosniff',
+  'Referrer-Policy': 'same-origin',
+  'Cache-Control': 'no-store',
+  'X-Robots-Tag': 'noindex',
+};
 
 function paginaLogin(env, mensaje = '', estado = 200) {
   const turnstile = turnstileActivo(env)
@@ -43,7 +53,7 @@ ${turnstile ? '<script src="https://challenges.cloudflare.com/turnstile/v0/api.j
 </html>`;
   return new Response(html, {
     status: estado,
-    headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex' },
+    headers: { ...cabecerasSeguras, 'Content-Type': 'text/html; charset=utf-8' },
   });
 }
 
@@ -54,8 +64,11 @@ export async function onRequest(contexto) {
 
   if (request.method === 'POST') {
     if (request.headers.get('Origin') !== url.origin) return paginaLogin(env, 'La solicitud no proviene de este sitio.', 403);
-    if (await bloqueado(request, env)) return paginaLogin(env, 'Demasiados intentos. Espera 15 minutos e intenta de nuevo.', 429);
     const datos = await request.formData().catch(() => null);
+    if (datos?.get('accion') === 'salir') {
+      return new Response(null, { status: 303, headers: { ...cabecerasSeguras, Location: '/editar/', 'Set-Cookie': cookieVencida } });
+    }
+    if (await bloqueado(request, env)) return paginaLogin(env, 'Demasiados intentos. Espera 15 minutos e intenta de nuevo.', 429);
     if (!(await humanoVerificado(request, env, datos?.get('cf-turnstile-response')))) {
       return paginaLogin(env, 'No pudimos confirmar que no eres un robot. Intenta de nuevo.', 400);
     }
@@ -66,12 +79,12 @@ export async function onRequest(contexto) {
       return paginaLogin(env, 'Contraseña incorrecta.', 401);
     }
     avisar(contexto, 'Ingreso al editor', 'Alguien entró al editor con la contraseña correcta.');
-    return new Response(null, { status: 303, headers: { Location: '/editar/', 'Set-Cookie': await crearCookie(env) } });
+    return new Response(null, { status: 303, headers: { ...cabecerasSeguras, Location: '/editar/', 'Set-Cookie': await crearCookie(env) } });
   }
 
   if (!(await sesionValida(request, env))) return paginaLogin(env);
   const respuesta = await next();
   const conSesion = new Response(respuesta.body, respuesta);
-  conSesion.headers.set('Cache-Control', 'no-store');
+  for (const [nombre, valor] of Object.entries(cabecerasSeguras)) conSesion.headers.set(nombre, valor);
   return conSesion;
 }

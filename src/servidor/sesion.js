@@ -32,6 +32,8 @@ export async function crearCookie(env) {
   return `${nombreCookie}=${vence}.${aHex(firma)}; Path=/; Max-Age=${duracionSesion}; HttpOnly; Secure; SameSite=Strict`;
 }
 
+export const cookieVencida = `${nombreCookie}=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Strict`;
+
 export async function sesionValida(request, env) {
   if (!editorConfigurado(env)) return false;
   const cookie = (request.headers.get('Cookie') ?? '').split(/;\s*/).find((parte) => parte.startsWith(`${nombreCookie}=`));

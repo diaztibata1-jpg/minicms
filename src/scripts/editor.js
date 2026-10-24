@@ -101,7 +101,19 @@ if (editorRoot) {
   if (enNube) {
     botonGuardar.hidden = true;
     botonEnviar.textContent = 'Publicar cambios';
-    barra.querySelector('.editor-barra__acciones').style.gridTemplateColumns = '1fr 1fr';
+    // Salir borra la cookie de sesión; útil en computadores compartidos.
+    const botonSalir = document.createElement('button');
+    botonSalir.type = 'button';
+    botonSalir.textContent = 'Salir';
+    botonSalir.addEventListener('click', () => {
+      const formulario = document.createElement('form');
+      formulario.method = 'post';
+      formulario.action = '/editar/';
+      formulario.innerHTML = '<input type="hidden" name="accion" value="salir">';
+      document.body.append(formulario);
+      formulario.submit();
+    });
+    botonWhatsapp.before(botonSalir);
     window.addEventListener('beforeunload', (evento) => {
       if (cambios.size) evento.preventDefault();
     });

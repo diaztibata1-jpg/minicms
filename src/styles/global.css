@@ -239,6 +239,98 @@ h1 {
   text-decoration: none;
 }
 
+.formulario {
+  grid-column: 1 / -1;
+  margin-top: calc(56px - 10vw);
+  display: grid;
+  gap: 18px;
+  padding-top: 28px;
+  border-top: 1px solid #789080;
+}
+
+.formulario__campos {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.formulario label > span {
+  display: block;
+  margin-bottom: 8px;
+  color: #d9e0d8;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.formulario input[type="text"],
+.formulario input[type="tel"],
+.formulario input[type="email"] {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 14px;
+  border: 1px solid #789080;
+  color: var(--papel-claro);
+  background: transparent;
+  font: inherit;
+  font-size: 15px;
+}
+
+.formulario input:focus-visible,
+.formulario button:focus-visible {
+  outline: 2px solid #f0a17f;
+  outline-offset: 2px;
+}
+
+.formulario__trampa {
+  position: absolute;
+  left: -9999px;
+}
+
+.formulario__autorizacion {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: #d9e0d8;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.formulario__autorizacion input {
+  width: 18px;
+  height: 18px;
+  margin: 1px 0 0;
+  accent-color: var(--coral);
+}
+
+.formulario .formulario__autorizacion span {
+  margin: 0;
+  font-size: 13px;
+  text-transform: none;
+}
+
+.formulario__boton {
+  justify-self: start;
+  border: 0;
+  color: white;
+  background: var(--coral);
+  cursor: pointer;
+}
+
+.formulario__boton:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.formulario__mensaje {
+  min-height: 1.5em;
+  margin: 0;
+  font-size: 14px;
+}
+
+.formulario__mensaje[data-estado="error"] {
+  color: #ffc4b0;
+}
+
 .pie {
   color: #647068;
   font-size: 12px;
@@ -276,6 +368,10 @@ h1 {
     gap: 30px;
     padding: 68px 8vw;
   }
+
+  .formulario {
+    margin-top: 0;
+  }
 }
 
 @media (max-width: 480px) {
@@ -291,6 +387,10 @@ h1 {
 
   .contacto__whatsapp {
     grid-column: auto;
+  }
+
+  .formulario__campos {
+    grid-template-columns: 1fr;
   }
 
   .pie {

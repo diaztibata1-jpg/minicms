@@ -1,9 +1,15 @@
 // Pide la contraseña del editor antes de mostrar /editar.
-import { bloqueado, contrasenaCorrecta, crearCookie, editorConfigurado, registrarFallo, sesionValida } from '../../src/servidor/sesion.js';
+import { avisar } from '../../src/servidor/avisos.js';
+import {
+  bloqueado, contrasenaCorrecta, crearCookie, editorConfigurado, humanoVerificado, registrarFallo, sesionValida, turnstileActivo,
+} from '../../src/servidor/sesion.js';
 
 const escapar = (texto) => texto.replace(/[&<>"]/g, (caracter) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[caracter]);
 
-function paginaLogin(mensaje = '', estado = 200) {
+function paginaLogin(env, mensaje = '', estado = 200) {
+  const turnstile = turnstileActivo(env)
+    ? `<div class="cf-turnstile" data-sitekey="${escapar(env.TURNSTILE_SITE_KEY)}" data-language="es"></div>`
+    : '';
   const html = `<!doctype html>
 <html lang="es">
 <head>
@@ -11,6 +17,7 @@ function paginaLogin(mensaje = '', estado = 200) {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Entrar al editor</title>
+${turnstile ? '<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>' : ''}
 <style>
   *{box-sizing:border-box}
   body{margin:0;min-height:100vh;display:grid;place-items:center;padding:16px;font-family:system-ui,sans-serif;background:#f4f4f5;color:#18181b}
@@ -18,6 +25,7 @@ function paginaLogin(mensaje = '', estado = 200) {
   h1{margin:0 0 20px;font-size:1.25rem}
   label{display:block;margin-bottom:6px;font-size:.9rem}
   input{width:100%;padding:12px;border:1px solid #d4d4d8;border-radius:8px;font-size:1rem}
+  .cf-turnstile{margin-top:16px}
   button{width:100%;margin-top:16px;padding:12px;border:0;border-radius:8px;background:#18181b;color:#fff;font-size:1rem;cursor:pointer}
   p{margin:12px 0 0;color:#b91c1c;font-size:.9rem}
 </style>
@@ -27,6 +35,7 @@ function paginaLogin(mensaje = '', estado = 200) {
   <h1>Editor del sitio</h1>
   <label for="contrasena">Contraseña</label>
   <input id="contrasena" name="contrasena" type="password" autocomplete="current-password" required autofocus>
+  ${turnstile}
   <button type="submit">Entrar</button>
   ${mensaje ? `<p role="alert">${escapar(mensaje)}</p>` : ''}
 </form>
@@ -38,22 +47,29 @@ function paginaLogin(mensaje = '', estado = 200) {
   });
 }
 
-export async function onRequest({ request, env, next }) {
-  if (!editorConfigurado(env)) return paginaLogin('El editor todavía no está configurado.', 503);
+export async function onRequest(contexto) {
+  const { request, env, next } = contexto;
+  if (!editorConfigurado(env)) return paginaLogin(env, 'El editor todavía no está configurado.', 503);
   const url = new URL(request.url);
 
   if (request.method === 'POST') {
-    if (request.headers.get('Origin') !== url.origin) return paginaLogin('La solicitud no proviene de este sitio.', 403);
-    if (await bloqueado(request, env)) return paginaLogin('Demasiados intentos. Espera 15 minutos e intenta de nuevo.', 429);
+    if (request.headers.get('Origin') !== url.origin) return paginaLogin(env, 'La solicitud no proviene de este sitio.', 403);
+    if (await bloqueado(request, env)) return paginaLogin(env, 'Demasiados intentos. Espera 15 minutos e intenta de nuevo.', 429);
     const datos = await request.formData().catch(() => null);
-    if (!(await contrasenaCorrecta(env, datos?.get('contrasena')))) {
-      await registrarFallo(request, env);
-      return paginaLogin('Contraseña incorrecta.', 401);
+    if (!(await humanoVerificado(request, env, datos?.get('cf-turnstile-response')))) {
+      return paginaLogin(env, 'No pudimos confirmar que no eres un robot. Intenta de nuevo.', 400);
     }
+    if (!(await contrasenaCorrecta(env, datos?.get('contrasena')))) {
+      if (await registrarFallo(request, env)) {
+        avisar(contexto, 'IP bloqueada en el editor', 'Alguien falló la contraseña 5 veces y su IP quedó bloqueada 15 minutos.');
+      }
+      return paginaLogin(env, 'Contraseña incorrecta.', 401);
+    }
+    avisar(contexto, 'Ingreso al editor', 'Alguien entró al editor con la contraseña correcta.');
     return new Response(null, { status: 303, headers: { Location: '/editar/', 'Set-Cookie': await crearCookie(env) } });
   }
 
-  if (!(await sesionValida(request, env))) return paginaLogin();
+  if (!(await sesionValida(request, env))) return paginaLogin(env);
   const respuesta = await next();
   const conSesion = new Response(respuesta.body, respuesta);
   conSesion.headers.set('Cache-Control', 'no-store');

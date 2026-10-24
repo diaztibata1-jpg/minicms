@@ -51,4 +51,9 @@ Configuración (una vez por sitio):
 3. **Variables del proyecto en Cloudflare Pages** (Settings > Variables and secrets, entorno Production): `EDITOR_GITHUB_TOKEN` y `EDITOR_PASSWORD`, las dos como secreto. Opcional: `GITHUB_REPO` (por defecto `diaztibata1-jpg/minicms`).
 4. **Bloqueo de intentos (opcional, recomendado):** crea un namespace KV (Storage & databases > KV) y enlázalo al proyecto en Settings > Bindings con el nombre `EDITOR_KV`. Con él, una IP queda bloqueada 15 minutos tras 5 contraseñas incorrectas. Sin él, cada intento fallido solo espera un segundo.
 
+5. **"No soy un robot" (opcional, recomendado):** en Cloudflare > Turnstile crea un widget para el dominio del sitio (modo *Managed*) y agrega `TURNSTILE_SITE_KEY` (texto) y `TURNSTILE_SECRET` (secreto). Sin ellas, el login funciona sin Turnstile.
+6. **Avisos por correo (opcional):** crea una cuenta gratis en Resend, genera una API key y agrega `RESEND_API_KEY` (secreto) y `AVISOS_CORREO`. Sin dominio propio en Resend, `AVISOS_CORREO` debe ser el correo de la cuenta de Resend. Llega un correo cuando alguien entra al editor, cuando envía cambios y cuando una IP queda bloqueada. Con un dominio verificado en Resend se puede cambiar el remitente con `AVISOS_REMITENTE`.
+
+Las variables nuevas aplican desde el siguiente despliegue.
+
 Si falta alguna variable o la contraseña es corta, `/editar` muestra que el editor no está configurado y la API no publica nada.

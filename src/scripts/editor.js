@@ -80,6 +80,10 @@ if (editorRoot) {
   barra.setAttribute('aria-label', 'Herramientas de edición');
   barra.innerHTML = '<span class="editor-mensaje" aria-live="polite">No hay cambios pendientes.</span><div class="editor-barra__acciones"><button type="button" data-whatsapp>WhatsApp</button><button type="button" data-guardar>Guardar</button><button type="button" data-enviar>Enviar cambios</button></div>';
   document.body.append(barra);
+  // La barra es fija: el body reserva su alto para que no tape el final del footer.
+  new ResizeObserver(() => {
+    document.body.style.marginBottom = `${barra.offsetHeight}px`;
+  }).observe(barra);
 
   const mensaje = barra.querySelector('.editor-mensaje');
   const botonGuardar = barra.querySelector('[data-guardar]');

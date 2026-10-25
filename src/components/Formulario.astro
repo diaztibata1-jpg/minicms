@@ -39,6 +39,8 @@ const { negocio } = Astro.props;
 </form>
 
 <script>
+  import { medir } from '../medicion/medir';
+
   const formulario = document.querySelector<HTMLFormElement>('[data-formulario]');
   const mensaje = formulario?.querySelector<HTMLElement>('.formulario__mensaje');
   const boton = formulario?.querySelector<HTMLButtonElement>('button[type="submit"]');
@@ -58,6 +60,7 @@ const { negocio } = Astro.props;
       const datos = await respuesta.json().catch(() => ({}));
       if (!respuesta.ok) throw new Error(datos.error || 'No se pudo enviar. Intenta de nuevo o escríbenos por WhatsApp.');
       formulario.reset();
+      await medir('generate_lead', { formulario: 'contacto' });
       mensaje.dataset.estado = 'ok';
       mensaje.textContent = '¡Gracias! Te contactaremos pronto.';
       window.location.assign('/gracias/');

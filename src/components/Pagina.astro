@@ -5,6 +5,9 @@ import Hero from './Hero.astro';
 import Servicios from './Servicios.astro';
 import Editor from './Editor.astro';
 import Meta from './Meta.astro';
+import Medicion from './Medicion.astro';
+import AvisoCookies from './AvisoCookies.astro';
+import { GTM_ID } from '../medicion/config';
 import '../styles/global.css';
 
 interface Props {
@@ -23,6 +26,7 @@ const contenido = pagina.data;
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{contenido.negocio_nombre}</title>
+    <Medicion />
     <Meta titulo={contenido.negocio_nombre} descripcion={contenido.seo_descripcion} indexar={edicion !== 'nube'} negocioLocal={!edicion} />
   </head>
   <body>
@@ -50,7 +54,9 @@ const contenido = pagina.data;
       <span data-campo="negocio_nombre">{contenido.negocio_nombre}</span>
       <span data-campo="direccion">{contenido.direccion}</span>
       <a href="/politica-de-datos">Política de tratamiento de datos</a>
+      {GTM_ID && <a href="/politica-de-datos#cookies" data-cookies>Cookies</a>}
     </footer>
+    {!edicion && <AvisoCookies />}
     {edicion && <Editor modo={edicion} />}
   </body>
 </html>

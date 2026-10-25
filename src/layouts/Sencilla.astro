@@ -2,6 +2,9 @@
 // Páginas secundarias (gracias, política de datos, 404): misma cabecera y pie que la principal.
 import { getCollection } from 'astro:content';
 import Meta from '../components/Meta.astro';
+import Medicion from '../components/Medicion.astro';
+import AvisoCookies from '../components/AvisoCookies.astro';
+import { GTM_ID } from '../medicion/config';
 import '../styles/global.css';
 
 interface Props {
@@ -20,6 +23,7 @@ const contenido = pagina.data;
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{titulo} · {contenido.negocio_nombre}</title>
+    <Medicion />
     <Meta titulo={`${titulo} · ${contenido.negocio_nombre}`} descripcion={contenido.seo_descripcion} indexar={indexar} />
   </head>
   <body>
@@ -33,6 +37,8 @@ const contenido = pagina.data;
     <footer class="pie">
       <span>{contenido.negocio_nombre}</span>
       <a href="/politica-de-datos">Política de tratamiento de datos</a>
+      {GTM_ID && <a href="/politica-de-datos#cookies" data-cookies>Cookies</a>}
     </footer>
+    <AvisoCookies />
   </body>
 </html>

@@ -295,7 +295,9 @@ export default function editorIntegration(): AstroIntegration {
                 // Cada envío parte de main actualizado para no arrastrar ramas anteriores.
                 // El contenido guardado se conserva en memoria y se vuelve a escribir encima.
                 const estado = (await ejecutar('git', ['status', '--porcelain', '-z', '--untracked-files=no'])).stdout.split('\0').filter(Boolean);
-                if (estado.some((linea) => !linea.slice(3).startsWith('src/content/paginas/'))) {
+                // package-lock.json cambia solo con npm install según la versión de npm; no cuenta como cambio de código.
+                const ignorados = new Set(['package-lock.json']);
+                if (estado.some((linea) => !linea.slice(3).startsWith('src/content/paginas/') && !ignorados.has(linea.slice(3)))) {
                   throw new Error('Hay archivos modificados fuera del contenido. Guárdalos o descártalos antes de enviar.');
                 }
                 const contenidoGuardado = await readFile(archivoSeguro, 'utf8');

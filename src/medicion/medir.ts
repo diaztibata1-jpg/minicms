@@ -16,6 +16,8 @@ export function medir(evento: string, datos: Record<string, string> = {}): Promi
     const tope = setTimeout(listo, 1000);
     window.dataLayer.push({
       event: evento,
+      // GTM reenvía a GA4 todo evento con origen "sitio": agregar un evento nuevo no exige tocar GTM.
+      origen: 'sitio',
       ...datos,
       eventCallback: () => { clearTimeout(tope); listo(); },
       eventTimeout: 1000,

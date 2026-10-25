@@ -15,7 +15,7 @@
 const SITIO = {
   nombre: 'Mini CMS (prueba)',
   url: 'https://minicms-6ej.pages.dev/', // igual a la propiedad de Search Console (prefijo de URL, con / al final)
-  ga4Propiedad: '', // número de la propiedad: GA4 > Administrar > Detalles de la propiedad
+  ga4Propiedad: '560690470', // número de la propiedad: GA4 > Administrar > Detalles de la propiedad
   clarityProyecto: 'z343mdlzp1',
   contactosHoja: '', // URL de la hoja de contactos del formulario (opcional; esta cuenta debe poder verla)
 };

@@ -596,3 +596,59 @@ h1 {
   font-weight: 400;
   font-size: 15px;
 }
+
+/* Aviso de cookies: fijo abajo para no mover el contenido (sin CLS). */
+.cookies {
+  position: fixed;
+  inset: auto 16px 16px;
+  z-index: 50;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 16px 20px;
+  color: var(--tinta);
+  background: var(--papel-claro);
+  border: 1px solid var(--linea);
+  box-shadow: 0 8px 30px rgb(32 59 50 / 18%);
+}
+
+.cookies[hidden] {
+  display: none;
+}
+
+.cookies p {
+  flex: 1 1 260px;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.cookies a {
+  color: var(--verde);
+}
+
+.cookies__botones {
+  display: flex;
+  gap: 8px;
+}
+
+.cookies__rechazar {
+  color: var(--tinta);
+  background: transparent;
+  border: 1px solid var(--tinta);
+}
+
+.cookies .boton {
+  border: 0;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.cookies .cookies__rechazar {
+  border: 1px solid var(--tinta);
+}

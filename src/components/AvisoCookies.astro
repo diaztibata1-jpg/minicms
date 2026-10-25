@@ -1,0 +1,55 @@
+---
+// Aviso de cookies. Solo aparece si el sitio tiene GTM; la respuesta se guarda en el navegador y actualiza el consentimiento.
+// El enlace "Cookies" del pie (data-cookies) lo vuelve a abrir.
+import { GTM_ID } from '../medicion/config';
+
+const activo = GTM_ID && !Astro.url.pathname.startsWith('/editar');
+---
+
+{activo && (
+  <div class="cookies" data-aviso-cookies hidden role="region" aria-label="Aviso de cookies">
+    <p>
+      Usamos cookies para medir las visitas y mejorar esta página.{" "}
+      <a href="/politica-de-datos#cookies">Más información</a>
+    </p>
+    <div class="cookies__botones">
+      <button class="boton cookies__rechazar" type="button" data-cookies-respuesta="no">Rechazar</button>
+      <button class="boton boton--oscuro" type="button" data-cookies-respuesta="si">Aceptar</button>
+    </div>
+  </div>
+)}
+
+<script>
+  const aviso = document.querySelector<HTMLElement>('[data-aviso-cookies]');
+  if (aviso) {
+    let guardado: string | null = null;
+    try { guardado = localStorage.getItem('cookies'); } catch {}
+    if (!guardado) aviso.hidden = false;
+
+    aviso.querySelectorAll<HTMLButtonElement>('[data-cookies-respuesta]').forEach((boton) => {
+      boton.addEventListener('click', () => {
+        const acepta = boton.dataset.cookiesRespuesta === 'si';
+        try { localStorage.setItem('cookies', acepta ? 'si' : 'no'); } catch {}
+        const permiso = acepta ? 'granted' : 'denied';
+        window.dataLayer = window.dataLayer || [];
+        // Igual que gtag(): GTM solo reconoce los comandos de consentimiento si llegan como "arguments".
+        const gtag = function (..._: unknown[]) { window.dataLayer.push(arguments as unknown as Record<string, unknown>); };
+        gtag('consent', 'update', {
+          analytics_storage: permiso,
+          ad_storage: permiso,
+          ad_user_data: permiso,
+          ad_personalization: permiso,
+        });
+        window.dataLayer.push({ event: 'cookies_respondidas', cookies: acepta ? 'si' : 'no' });
+        aviso.hidden = true;
+      });
+    });
+
+    document.querySelectorAll('[data-cookies]').forEach((enlace) => {
+      enlace.addEventListener('click', (evento) => {
+        evento.preventDefault();
+        aviso.hidden = false;
+      });
+    });
+  }
+</script>

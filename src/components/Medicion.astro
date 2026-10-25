@@ -1,0 +1,37 @@
+---
+// Google Tag Manager con modo de consentimiento: nada guarda cookies hasta que el visitante acepta en el aviso.
+// No se carga en el editor (/editar) para no medir al cliente mientras edita.
+import { GTM_ID } from '../medicion/config';
+
+const activa = GTM_ID && !Astro.url.pathname.startsWith('/editar');
+---
+
+{activa && (
+  <script is:inline define:vars={{ GTM_ID }}>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    var guardado = null;
+    try { guardado = localStorage.getItem('cookies'); } catch (e) {}
+    var permiso = guardado === 'si' ? 'granted' : 'denied';
+    gtag('consent', 'default', {
+      analytics_storage: permiso,
+      ad_storage: permiso,
+      ad_user_data: permiso,
+      ad_personalization: permiso,
+      wait_for_update: 500,
+    });
+    (function (w, d, s, l, i) {
+      w[l] = w[l] || [];
+      w[l].push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+      var f = d.getElementsByTagName(s)[0], j = d.createElement(s);
+      j.async = true;
+      j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i;
+      f.parentNode.insertBefore(j, f);
+    })(window, document, 'script', 'dataLayer', GTM_ID);
+  </script>
+)}
+
+<script>
+  import { medirMarcas } from '../medicion/medir';
+  medirMarcas();
+</script>

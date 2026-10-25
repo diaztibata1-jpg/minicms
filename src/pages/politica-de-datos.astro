@@ -3,6 +3,7 @@
 // Plantilla común: los datos del negocio salen del contenido (bloque legal). Revisar con un abogado antes de usarla con clientes.
 import { getCollection } from 'astro:content';
 import Sencilla from '../layouts/Sencilla.astro';
+import { GTM_ID } from '../medicion/config';
 
 const [pagina] = await getCollection('paginas');
 const { negocio_nombre, direccion, whatsapp, legal } = pagina.data;
@@ -97,11 +98,29 @@ const telefono = `+57 ${whatsapp.slice(2, 5)} ${whatsapp.slice(5, 8)} ${whatsapp
       salvo que la ley exija guardarlos por más tiempo.
     </p>
 
-    <h2>10. Cookies</h2>
-    <p>
-      Este sitio no usa cookies de publicidad ni de seguimiento. Si en el futuro las usamos, actualizaremos esta
-      política y te pediremos tu consentimiento.
-    </p>
+    <h2 id="cookies">10. Cookies</h2>
+    {GTM_ID ? (
+      <>
+        <p>
+          Con tu permiso usamos cookies de medición para saber cuántas personas visitan la página, de dónde llegan y
+          qué secciones les sirven, y así mejorarla. No las usamos para identificarte.
+        </p>
+        <ul>
+          <li>Google Analytics y Google Tag Manager (Google): visitas y acciones en la página.</li>
+          <li>Microsoft Clarity (Microsoft): mapas de calor y grabaciones anónimas de la navegación, sin lo que escribes en los campos.</li>
+          <li>Píxel de Meta (Meta): medir y mostrar anuncios en Facebook e Instagram a quienes visitaron la página.</li>
+        </ul>
+        <p>
+          Estas cookies solo se activan si eliges <strong>Aceptar</strong> en el aviso. Puedes cambiar tu decisión en
+          cualquier momento desde el enlace <a href="#cookies" data-cookies>Cookies</a> al pie de la página.
+        </p>
+      </>
+    ) : (
+      <p>
+        Este sitio no usa cookies de publicidad ni de seguimiento. Si en el futuro las usamos, actualizaremos esta
+        política y te pediremos tu consentimiento.
+      </p>
+    )}
 
     <h2>11. Vigencia y cambios</h2>
     <p>

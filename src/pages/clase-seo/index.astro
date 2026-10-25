@@ -1,0 +1,48 @@
+---
+// Clase de SEO: portada con las dos partes. Mismo layout que el resto: noindex y fuera del sitemap.
+import Sencilla from '../../layouts/Sencilla.astro';
+import '../../styles/clase.css';
+---
+
+<Sencilla titulo="Clase de SEO">
+  <article class="clase">
+    <span class="seccion__numero">Material de clase</span>
+    <h1>SEO para un sitio pequeño, con un sitio real</h1>
+    <p class="clase__intro">
+      Todo lo que vamos a ver está aplicado en <a href="/">este sitio de ejemplo</a>, una landing para una panadería
+      hecha en HTML estático. La clase tiene dos partes: lo técnico, que deja a Google entrar y entender, y el
+      contenido, que decide con qué búsquedas aparece.
+    </p>
+    <p class="clase__aviso">
+      <strong>Antes de empezar:</strong> acepten las cookies cuando salga el aviso. Así lo que hagan en estas páginas
+      queda medido y lo vemos en Google Analytics.
+    </p>
+
+    <div class="partes">
+      <a class="parte" href="/clase-seo/tecnico" data-evento="elegir_tema" data-evento-seccion="tecnico">
+        <span class="seccion__numero">Parte 1</span>
+        <h2>SEO técnico</h2>
+        <ul>
+          <li>robots.txt, sitemap, canonical</li>
+          <li>Título, descripción y Open Graph</li>
+          <li>Datos estructurados y favicon</li>
+          <li>Lighthouse y SEO Site Checkup</li>
+          <li>Search Console y medición</li>
+        </ul>
+        <span class="parte__ir">Empezar →</span>
+      </a>
+      <a class="parte" href="/clase-seo/contenido" data-evento="elegir_tema" data-evento-seccion="contenido">
+        <span class="seccion__numero">Parte 2</span>
+        <h2>SEO de contenido</h2>
+        <ul>
+          <li>Intención de búsqueda</li>
+          <li>Ubersuggest, Trends, Planificador</li>
+          <li>Competencia con Similarweb</li>
+          <li>Dónde van las palabras clave</li>
+          <li>SEO local y Perfil de Empresa</li>
+        </ul>
+        <span class="parte__ir">Empezar →</span>
+      </a>
+    </div>
+  </article>
+</Sencilla>

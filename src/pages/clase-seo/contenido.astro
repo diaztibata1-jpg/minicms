@@ -1,0 +1,288 @@
+---
+// Clase de SEO, parte 2: SEO de contenido y herramientas para investigar palabras clave y competencia.
+// Mismo layout que la parte 1: noindex y fuera del sitemap.
+// Eventos de la clase (data-evento): ir_al_tema, abrir_herramienta, marcar_punto, cambiar_cookies, leer_completo.
+import Sencilla from '../../layouts/Sencilla.astro';
+import '../../styles/clase.css';
+
+const ejemplo = 'pan de masa madre bogota';
+const q = encodeURIComponent(ejemplo);
+
+interface Herramienta {
+  id: string;
+  nombre: string;
+  url: string;
+  precio: string;
+  para: string;
+}
+
+const investigar: Herramienta[] = [
+  { id: 'google_autocompletar', nombre: 'Google', url: `https://www.google.com/search?q=${q}`, precio: 'Gratis', para: 'Lo que sugiere al escribir, "Otras preguntas de los usuarios" y "Búsquedas relacionadas" al final.' },
+  { id: 'ubersuggest', nombre: 'Ubersuggest', url: 'https://neilpatel.com/es/ubersuggest/', precio: 'Gratis con límite diario', para: 'Volumen de búsqueda, dificultad, ideas de palabras y qué páginas salen arriba.' },
+  { id: 'google_trends', nombre: 'Google Trends', url: `https://trends.google.com/trends/explore?geo=CO&q=${encodeURIComponent('masa madre')}`, precio: 'Gratis', para: 'Si un tema sube o baja, en qué meses y en qué departamentos se busca más.' },
+  { id: 'planificador_google_ads', nombre: 'Planificador de palabras clave', url: 'https://ads.google.com/intl/es-419_co/home/tools/keyword-planner/', precio: 'Gratis con cuenta de Google Ads', para: 'Rangos de búsquedas mensuales en Colombia, directo de Google.' },
+  { id: 'answerthepublic', nombre: 'AnswerThePublic', url: 'https://answerthepublic.com/es', precio: 'Gratis con límite diario', para: 'Las preguntas que la gente hace alrededor de una palabra: qué, cómo, dónde, cuánto.' },
+];
+
+const competencia: Herramienta[] = [
+  { id: 'similarweb', nombre: 'Similarweb', url: 'https://www.similarweb.com/', precio: 'Gratis con datos básicos', para: 'Visitas estimadas de un sitio, de dónde llegan (Google, redes, directo) y sitios parecidos.' },
+  { id: 'ubersuggest_dominio', nombre: 'Ubersuggest (por dominio)', url: 'https://neilpatel.com/es/ubersuggest/', precio: 'Gratis con límite diario', para: 'Pega el dominio de un competidor: con qué palabras aparece y qué páginas le traen más visitas.' },
+  { id: 'ahrefs_gratis', nombre: 'Generador de palabras de Ahrefs', url: 'https://ahrefs.com/es/keyword-generator', precio: 'Gratis, versión limitada', para: 'Ideas de palabras y preguntas con su dificultad aproximada.' },
+];
+
+const temas = [
+  ['intencion', 'Intención de búsqueda'],
+  ['palabras', 'Investigar palabras'],
+  ['competencia', 'Mirar a la competencia'],
+  ['pagina', 'Una página, un tema'],
+  ['escribir', 'Escribir para personas'],
+  ['local', 'SEO local'],
+  ['enlaces', 'Enlaces y menciones'],
+  ['medir', 'Medir y ajustar'],
+];
+
+const lista = [
+  '¿Sé qué busca la gente para llegar a este negocio (y con qué intención)?',
+  '¿Cada palabra importante tiene una página o sección que la responde?',
+  '¿El título, el h1 y la URL dicen qué es y dónde?',
+  '¿La página responde lo que preguntan: precios, zona, horarios, cómo pedir?',
+  '¿Hay fotos propias con texto alternativo descriptivo?',
+  '¿Muestra quién está detrás, reseñas y datos de contacto completos?',
+  '¿El Perfil de Empresa de Google está verificado y completo?',
+  '¿Nombre, dirección y teléfono son iguales en todos lados?',
+  '¿Search Console muestra con qué búsquedas aparece y cuántos clics recibe?',
+];
+---
+
+<Sencilla titulo="Clase de SEO · Parte 2: contenido">
+  <article class="clase">
+    <a class="clase__miga" href="/clase-seo">Clase de SEO</a>
+    <span class="seccion__numero">Parte 2 de 2 · SEO de contenido</span>
+    <h1>Que el sitio responda lo que la gente busca</h1>
+    <p class="clase__intro">
+      El <a href="/clase-seo/tecnico">SEO técnico</a> deja la puerta abierta. El de contenido decide con qué
+      búsquedas aparece el sitio: qué palabras usa la gente, qué quiere encontrar y si la página se lo da mejor que
+      la competencia. El ejemplo es la misma panadería del sitio de prueba.
+    </p>
+    <p class="clase__aviso">
+      <strong>Ojo:</strong> las herramientas de palabras clave dan estimaciones, no cifras exactas. Para búsquedas
+      locales con poco volumen suelen mostrar cero o "sin datos", y aun así esas búsquedas existen.
+    </p>
+
+    <nav class="clase__indice" aria-label="Temas">
+      <ol>
+        {temas.map(([id, nombre]) => (
+          <li><a href={`#${id}`} data-evento="ir_al_tema" data-evento-seccion={id}>{nombre}</a></li>
+        ))}
+      </ol>
+    </nav>
+
+    <section class="tema" id="intencion">
+      <span class="tema__numero">01</span>
+      <h2>Intención de búsqueda: qué quiere la persona</h2>
+      <p>
+        Dos búsquedas con las mismas palabras pueden pedir cosas distintas. Google muestra lo que mejor responde la
+        intención, así que la página tiene que coincidir con ella.
+      </p>
+      <table class="ejemplo">
+        <thead><tr><th>Intención</th><th>Ejemplo</th><th>Qué espera encontrar</th></tr></thead>
+        <tbody>
+          <tr><td>Informativa</td><td>cómo hacer masa madre</td><td>Una guía o un video. Una panadería difícilmente gana aquí.</td></tr>
+          <tr><td>Comercial</td><td>mejor pan de masa madre en Bogotá</td><td>Comparar opciones, reseñas, fotos.</td></tr>
+          <tr><td>Transaccional</td><td>pedir pan de masa madre a domicilio</td><td>Precios y un botón para pedir.</td></tr>
+          <tr><td>Local</td><td>panadería cerca de mí</td><td>El mapa con negocios cercanos (Perfil de Empresa, tema 06).</td></tr>
+          <tr><td>Navegacional</td><td>panadería la espiga</td><td>El sitio del negocio. Si no sale primero, algo está mal.</td></tr>
+        </tbody>
+      </table>
+      <p class="tema__nota">Truco: busca la palabra en Google y mira qué sale arriba. Eso es lo que Google cree que la gente quiere.</p>
+    </section>
+
+    <section class="tema" id="palabras">
+      <span class="tema__numero">02</span>
+      <h2>Investigar palabras: cómo lo dice la gente, no el negocio</h2>
+      <p>
+        El negocio dice "bollería artesanal"; la gente busca "croissant cerca de mí". Se empieza con una lista de lo
+        que el negocio vende y se contrasta con lo que de verdad se busca. Para un negocio local valen más las
+        búsquedas largas y con barrio o ciudad: tienen menos volumen, pero quien las hace está listo para comprar.
+      </p>
+      <ol class="tema__lista">
+        <li>Lista de servicios o productos, con las palabras del cliente.</li>
+        <li>Escribir cada una en Google y anotar lo que autocompleta y las preguntas que aparecen.</li>
+        <li>Pasarlas por Ubersuggest o el Planificador para ver volumen y dificultad.</li>
+        <li>Revisar en Trends si hay temporadas (por ejemplo, roscones en diciembre).</li>
+        <li>Elegir pocas y repartirlas por página o sección (tema 04).</li>
+      </ol>
+      <div class="herramientas">
+        {investigar.map((h) => (
+          <a class="herramienta" href={h.url} target="_blank" rel="noopener" data-evento="abrir_herramienta" data-evento-seccion={h.id}>
+            <strong>{h.nombre}</strong>
+            <span class="herramienta__precio">{h.precio}</span>
+            <span>{h.para}</span>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <section class="tema" id="competencia">
+      <span class="tema__numero">03</span>
+      <h2>Mirar a la competencia</h2>
+      <p>
+        Los sitios que ya salen arriba muestran lo que Google premia para esa búsqueda: qué temas tocan, qué tan
+        largas son sus páginas, qué preguntas responden. No es para copiar, es para hacerlo mejor o más local.
+      </p>
+      <div class="herramientas">
+        {competencia.map((h) => (
+          <a class="herramienta" href={h.url} target="_blank" rel="noopener" data-evento="abrir_herramienta" data-evento-seccion={h.id}>
+            <strong>{h.nombre}</strong>
+            <span class="herramienta__precio">{h.precio}</span>
+            <span>{h.para}</span>
+          </a>
+        ))}
+      </div>
+      <p class="tema__nota">
+        Similarweb estima a partir de paneles de usuarios: con sitios grandes da una buena idea, pero un negocio
+        pequeño casi siempre sale sin datos. Para un sitio propio, el dato real está en Analytics y Search Console.
+      </p>
+    </section>
+
+    <section class="tema" id="pagina">
+      <span class="tema__numero">04</span>
+      <h2>Una página, un tema: dónde van las palabras</h2>
+      <p>
+        Cada búsqueda importante necesita un lugar que la responda. En una landing de una sola página, cada sección
+        cubre un tema; si un servicio tiene mucho que contar, merece su propia página.
+      </p>
+      <table class="ejemplo">
+        <thead><tr><th>Dónde</th><th>Qué pesa</th><th>Ejemplo</th></tr></thead>
+        <tbody>
+          <tr><td>Título (title)</td><td>Mucho</td><td>Pan de masa madre en San Miguel, Bogotá · La Espiga</td></tr>
+          <tr><td>h1</td><td>Mucho</td><td>Pan de masa madre horneado cada mañana</td></tr>
+          <tr><td>h2 de cada sección</td><td>Medio</td><td>Tortas por encargo · Domicilios en San Miguel</td></tr>
+          <tr><td>URL</td><td>Poco, pero ayuda</td><td>/tortas-por-encargo</td></tr>
+          <tr><td>Texto alternativo de fotos</td><td>Poco (y Google Imágenes)</td><td>Hogaza de masa madre recién horneada</td></tr>
+        </tbody>
+      </table>
+      <div class="vivo">
+        <span class="vivo__etiqueta">En vivo · títulos del sitio de ejemplo</span>
+        <ul class="revision" data-vivo="estructura"><li>Cargando…</li></ul>
+      </div>
+      <p class="tema__nota">
+        Ejercicio: ¿qué palabra clave pondrían en el título de este sitio? Hoy el título es solo el nombre del
+        negocio, que sirve para quien ya lo conoce pero no para quien busca "panadería en San Miguel".
+      </p>
+    </section>
+
+    <section class="tema" id="escribir">
+      <span class="tema__numero">05</span>
+      <h2>Escribir para personas (y Google lo nota)</h2>
+      <p>
+        Google busca contenido útil, hecho por alguien que sabe del tema y que inspire confianza. Lo resume como
+        E-E-A-T: experiencia, conocimiento, autoridad y confianza. En un negocio pequeño eso se ve así:
+      </p>
+      <ul class="tema__lista">
+        <li><strong>Responder rápido:</strong> qué venden, dónde, cuánto cuesta y cómo pedir, arriba y sin rodeos.</li>
+        <li><strong>Preguntas frecuentes</strong> con las dudas reales que llegan por WhatsApp.</li>
+        <li><strong>Fotos propias</strong> del lugar, los productos y el equipo; nada de bancos de imágenes.</li>
+        <li><strong>Quién está detrás:</strong> la historia, años de experiencia, el nombre del dueño.</li>
+        <li><strong>Pruebas:</strong> reseñas, clientes, dirección y teléfono visibles.</li>
+        <li><strong>Al día:</strong> precios y horarios vigentes; lo desactualizado espanta más que lo que falta.</li>
+      </ul>
+      <p class="tema__nota">Escribir con IA está bien si una persona revisa, agrega lo propio del negocio y responde por lo que dice.</p>
+    </section>
+
+    <section class="tema" id="local">
+      <span class="tema__numero">06</span>
+      <h2>SEO local: el mapa pesa más que el sitio</h2>
+      <p>
+        Para "panadería cerca de mí" Google muestra primero el mapa con tres negocios. Ese bloque sale del Perfil de
+        Empresa de Google, no del sitio web. El sitio ayuda a confirmar los datos, pero el perfil es la pieza principal.
+      </p>
+      <ul class="tema__lista">
+        <li>Perfil verificado, con la categoría correcta y las secundarias que apliquen.</li>
+        <li>Horarios, fotos, productos o servicios y enlace al sitio.</li>
+        <li>Reseñas reales, pedidas a clientes contentos y respondidas todas, también las malas.</li>
+        <li>Nombre, dirección y teléfono idénticos en el perfil, el sitio, redes y directorios.</li>
+      </ul>
+      <div class="herramientas">
+        <a class="herramienta" href="https://www.google.com/intl/es-419_co/business/" target="_blank" rel="noopener" data-evento="abrir_herramienta" data-evento-seccion="perfil_empresa">
+          <strong>Perfil de Empresa de Google</strong>
+          <span class="herramienta__precio">Gratis</span>
+          <span>Crear o reclamar la ficha del negocio en Google Maps y Búsqueda.</span>
+        </a>
+      </div>
+    </section>
+
+    <section class="tema" id="enlaces">
+      <span class="tema__numero">07</span>
+      <h2>Enlaces y menciones: que otros hablen del sitio</h2>
+      <p>
+        Un enlace desde otro sitio es una recomendación. Para un negocio local no se necesitan miles: sirven los de
+        directorios serios, la cámara de comercio, proveedores, medios y blogs de la zona, y eventos donde participe.
+      </p>
+      <p class="tema__nota">Comprar enlaces o intercambiarlos en masa va contra las reglas de Google y puede hundir el sitio.</p>
+    </section>
+
+    <section class="tema" id="medir">
+      <span class="tema__numero">08</span>
+      <h2>Medir y ajustar</h2>
+      <p>
+        El contenido se ajusta con datos. El informe de rendimiento de Search Console muestra con qué búsquedas
+        aparece el sitio, cuántas veces (impresiones), cuántos clics recibe, el porcentaje de clics (CTR) y la
+        posición promedio. Analytics muestra qué hacen después: si escriben por WhatsApp o envían el formulario.
+      </p>
+      <ul class="tema__lista">
+        <li>Muchas impresiones y pocos clics: mejorar título y descripción.</li>
+        <li>Buena posición en una búsqueda que no esperaban: crear una sección para ella.</li>
+        <li>Visitas que no contactan: revisar si la página responde lo que buscaban.</li>
+      </ul>
+      <p>
+        Los botones de esta clase envían eventos a Analytics. Si aceptaron las cookies, lo que hicieron hoy aquí
+        aparece en el informe mensual del sitio.
+      </p>
+      <div class="tema__acciones">
+        <a class="boton sencilla__volver" href="https://search.google.com/search-console" target="_blank" rel="noopener" data-evento="abrir_herramienta" data-evento-seccion="search_console">Abrir Search Console</a>
+        <a class="boton sencilla__volver" href="/politica-de-datos#cookies" data-cookies data-evento="cambiar_cookies" data-evento-seccion="contenido">Cambiar mi respuesta de cookies</a>
+      </div>
+    </section>
+
+    <section class="tema tema--cierre" data-final="contenido">
+      <h2>Lista para revisar el contenido de cualquier sitio</h2>
+      <ul class="auditoria">
+        {lista.map((punto, i) => (
+          <li>
+            <label>
+              <input type="checkbox" data-evento="marcar_punto" data-evento-seccion={`contenido_${i + 1}`} />
+              <span>{punto}</span>
+            </label>
+          </li>
+        ))}
+      </ul>
+      <div class="tema__acciones">
+        <a class="boton sencilla__volver" href="/clase-seo/tecnico" data-evento="elegir_tema" data-evento-seccion="tecnico">Volver a la parte 1: técnico</a>
+      </div>
+    </section>
+  </article>
+</Sencilla>
+
+<script>
+  import { medirFinal } from '../../scripts/clase';
+  medirFinal();
+
+  // Títulos de la página principal: el título, el h1 y los h2, como los lee Google.
+  const caja = document.querySelector('[data-vivo="estructura"]');
+  const punto = (etiqueta: string, texto: string) => {
+    const li = document.createElement('li');
+    const marca = document.createElement('code');
+    marca.textContent = etiqueta;
+    li.append(marca, ` ${texto}`);
+    return li;
+  };
+  fetch('/', { cache: 'no-store' })
+    .then((respuesta) => respuesta.text())
+    .then((html) => {
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      const encabezados = [...doc.querySelectorAll('h1, h2')].map((h) => punto(h.tagName.toLowerCase(), h.textContent?.trim() ?? ''));
+      caja?.replaceChildren(punto('title', doc.title), ...encabezados);
+    })
+    .catch(() => caja?.replaceChildren(punto('—', 'No se pudo leer la página principal.')));
+</script>

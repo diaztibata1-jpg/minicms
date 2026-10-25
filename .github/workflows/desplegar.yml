@@ -4,11 +4,12 @@ name: Desplegar en Cloudflare Pages
 # porque una fusión hecha con GITHUB_TOKEN no dispara el evento push.
 on:
   push:
-    branches: [main]
+    # clase-seo: rama aparte para la clase; se publica como vista previa (clase-seo.<proyecto>.pages.dev) sin tocar producción.
+    branches: [main, clase-seo]
   workflow_dispatch:
 
 concurrency:
-  group: desplegar
+  group: desplegar-${{ github.ref_name }}
   cancel-in-progress: false
 
 permissions:
@@ -45,5 +46,5 @@ jobs:
           fi
           # La primera vez el proyecto no existe; si ya existe, este comando falla y se sigue.
           npx --yes wrangler@4 pages project create "$PROYECTO" --production-branch=main || true
-          npx --yes wrangler@4 pages deploy dist --project-name="$PROYECTO" --branch=main
-          echo "## ✅ Publicado en https://$PROYECTO.pages.dev" >> "$GITHUB_STEP_SUMMARY"
+          npx --yes wrangler@4 pages deploy dist --project-name="$PROYECTO" --branch="$GITHUB_REF_NAME"
+          echo "## ✅ Publicado (rama $GITHUB_REF_NAME; la dirección sale en el registro de wrangler)" >> "$GITHUB_STEP_SUMMARY"

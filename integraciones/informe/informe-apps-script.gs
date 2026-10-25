@@ -28,8 +28,15 @@ const CONTACTOS = [
 ];
 
 // Los 7 eventos propios del sitio, en el orden en que salen en el informe.
+// Rama clase-seo: los eventos de las páginas de la clase, para probar el informe con datos reales.
 const EVENTOS = [
-  ['generate_lead', 'Enviaron el formulario'],
+  ['elegir_tema', 'Eligieron una parte de la clase'],
+  ['ir_al_tema', 'Saltaron a un tema desde el índice'],
+  ['ver_archivo', 'Abrieron robots, sitemap u otro archivo'],
+  ['abrir_herramienta', 'Abrieron una herramienta de SEO'],
+  ['marcar_punto', 'Marcaron un punto de la lista'],
+  ['cambiar_cookies', 'Abrieron el aviso de cookies'],
+  ['leer_completo', 'Llegaron al final de una parte'],
 ];
 
 const MARCA = '[nuestra marca]';

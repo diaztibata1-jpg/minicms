@@ -1,11 +1,9 @@
 ---
-// Clase de SEO, parte 1: SEO técnico del sitio con la evidencia real.
-// Los bloques "En vivo" leen la página principal, robots.txt y sitemap.xml desde el navegador, así nunca se desactualizan.
-// Queda fuera del sitemap y con noindex: es material de clase, no contenido del negocio.
+// Clase de SEO, parte 1: SEO técnico, usando este mismo sitio como ejemplo.
+// Los bloques "En vivo" leen la portada, robots.txt y sitemap.xml desde el navegador, así nunca se desactualizan.
 // Eventos de la clase (data-evento): ir_al_tema, ver_archivo, abrir_herramienta, marcar_punto, cambiar_cookies, leer_completo.
-import Sencilla from '../../layouts/Sencilla.astro';
-import { GTM_ID } from '../../medicion/config';
-import '../../styles/clase.css';
+import Clase from '../layouts/Clase.astro';
+import { GTM_ID } from '../medicion/config';
 
 const sitio = new URL('/', Astro.site).href;
 const dominio = new URL(sitio).host;
@@ -52,20 +50,19 @@ const lista = [
 ];
 ---
 
-<Sencilla titulo="Clase de SEO · Parte 1: técnico">
+<Clase titulo="SEO técnico: robots, sitemap, Lighthouse y más · Clase de SEO" descripcion="Parte 1 de la clase de SEO: robots.txt, sitemap, canonical, Open Graph, datos estructurados, favicon, Lighthouse y Search Console, revisados en vivo.">
   <article class="clase">
-    <a class="clase__miga" href="/clase-seo">Clase de SEO</a>
+    <a class="clase__miga" href="/">Clase de SEO</a>
     <span class="seccion__numero">Parte 1 de 2 · SEO técnico</span>
     <h1>Que Google pueda entrar, entender y mostrar el sitio</h1>
     <p class="clase__intro">
       El SEO técnico revisa la base: que el buscador pueda rastrear el sitio, sepa qué indexar, entienda de qué
-      negocio se trata y que la página cargue rápido. Todo lo de esta página está aplicado en
-      <a href="/" data-evento="ver_archivo" data-evento-seccion="inicio">el sitio de ejemplo</a>, y cada bloque
-      <strong>En vivo</strong> lo lee en este momento: no es una captura.
+      trata y que la página cargue rápido. Todo lo de esta página está aplicado en este mismo sitio,
+      y cada bloque <strong>En vivo</strong> lo lee en este momento de la <a href="/" data-evento="ver_archivo" data-evento-seccion="portada">portada</a>: no es una captura.
     </p>
     <p class="clase__aviso">
       <strong>Ojo:</strong> nada de esto garantiza el primer lugar en Google. El SEO técnico quita obstáculos; el
-      posicionamiento depende además del contenido, que es la <a href="/clase-seo/contenido">parte 2</a>.
+      posicionamiento depende además del contenido, que es la <a href="/contenido/">parte 2</a>.
     </p>
 
     <nav class="clase__indice" aria-label="Temas">
@@ -81,7 +78,8 @@ const lista = [
       <h2>robots.txt: qué puede revisar el buscador</h2>
       <p>
         Es lo primero que lee un rastreador al llegar a un dominio. Le dice qué rutas no debe revisar y dónde está
-        el mapa del sitio. Aquí bloqueamos solo <code>/editar</code>, el editor del cliente.
+        el mapa del sitio. Aquí no bloqueamos nada: <code>Disallow:</code> vacío significa que puede revisar todo. Un
+        sitio con una zona privada, como un panel de administración o un carrito, bloquearía esa ruta.
       </p>
       <p class="tema__nota">
         robots.txt no esconde nada: una página bloqueada aún puede aparecer en Google si alguien la enlaza. Para sacar
@@ -101,8 +99,8 @@ const lista = [
       <h2>sitemap.xml: la lista de páginas que queremos en Google</h2>
       <p>
         Un archivo XML con las direcciones que sí deben indexarse. Se genera solo al publicar, tomando el dominio de
-        la configuración, así no hay que mantenerlo a mano. Solo lleva páginas indexables: la página de gracias,
-        la política de datos, el 404, el editor y esta clase quedan fuera.
+        la configuración, así no hay que mantenerlo a mano. Solo lleva páginas indexables: la de privacidad y la de
+        error 404 quedan fuera.
       </p>
       <div class="vivo">
         <span class="vivo__etiqueta">En vivo · /sitemap.xml</span>
@@ -128,7 +126,13 @@ const lista = [
           <thead><tr><th>Página</th><th>Qué le dice a Google</th></tr></thead>
           <tbody data-vivo="indexacion"><tr><td colspan="2">Cargando…</td></tr></tbody>
         </table>
+        <p class="vivo__medidas" data-vivo="encabezado"></p>
       </div>
+      <p class="tema__nota">
+        El <code>noindex</code> también puede llegar como encabezado HTTP (<code>X-Robots-Tag</code>), que no se ve en
+        el código de la página. Las direcciones de vista previa de algunos servicios de alojamiento lo agregan solas
+        para no competir con el sitio oficial. La última línea del bloque dice si llega aquí.
+      </p>
     </section>
 
     <section class="tema" id="snippet">
@@ -136,15 +140,15 @@ const lista = [
       <h2>Título y descripción: lo que se ve en el resultado</h2>
       <p>
         El <code>&lt;title&gt;</code> y la <code>meta description</code> son lo que normalmente muestra Google en la
-        lista de resultados. La descripción no sube posiciones, pero decide si la persona hace clic. La escribimos
-        para cada negocio, entre 50 y 155 caracteres, con qué es, dónde está y qué hacer.
+        lista de resultados. La descripción no sube posiciones, pero decide si la persona hace clic. Se escribe para
+        cada página, entre 50 y 155 caracteres: qué es, para quién y qué va a encontrar.
       </p>
       <p class="tema__nota">
         Google puede reescribir los dos si cree que otro texto de la página responde mejor la búsqueda. Qué palabras
-        poner en el título es tema de la <a href="/clase-seo/contenido#pagina">parte 2</a>.
+        poner en el título es tema de la <a href="/contenido/#pagina">parte 2</a>.
       </p>
       <div class="vivo">
-        <span class="vivo__etiqueta">En vivo · así se vería en Google (aproximado)</span>
+        <span class="vivo__etiqueta">En vivo · así se vería la portada en Google (aproximado)</span>
         <div class="serp">
           <div class="serp__sitio">
             <img class="serp__icono" src="/favicon.svg" alt="" width="26" height="26" />
@@ -163,8 +167,8 @@ const lista = [
       <p>
         No es SEO de Google, pero para un negocio pequeño pesa igual: mucho del tráfico llega por enlaces
         compartidos. Las etiquetas <code>og:</code> definen título, descripción e imagen de la vista previa. La
-        imagen de 1200×630 se genera sola al publicar con el nombre, el titular y la foto principal, y pesa menos
-        de 300 KB porque WhatsApp no muestra imágenes más pesadas.
+        imagen es de 1200×630, se genera sola al publicar y pesa menos de 300 KB, porque WhatsApp no muestra
+        imágenes más pesadas. Prueben: peguen la dirección de este sitio en un chat de WhatsApp.
       </p>
       <div class="vivo">
         <span class="vivo__etiqueta">En vivo · /og.jpg y etiquetas</span>
@@ -179,19 +183,31 @@ const lista = [
 
     <section class="tema" id="datos">
       <span class="tema__numero">06</span>
-      <h2>Datos estructurados: decirle a Google qué es el negocio</h2>
+      <h2>Datos estructurados: decirle a Google qué es la página</h2>
       <p>
-        Un bloque JSON-LD con el vocabulario de schema.org le dice a Google, sin adivinar, que esto es un
-        <code>LocalBusiness</code> con nombre, teléfono, dirección y ciudad. Va solo en la página principal y se
-        llena con los mismos datos que el cliente edita, así nunca contradice lo que dice la página.
+        Un bloque JSON-LD con el vocabulario de schema.org le dice a Google, sin adivinar, qué es la página. La
+        portada de este sitio se declara como <code>Course</code> (un curso, con sus dos partes). Un negocio usaría
+        <code>LocalBusiness</code> con nombre, teléfono, dirección y ciudad, como el ejemplo de abajo. Los datos
+        tienen que coincidir con lo que dice la página.
       </p>
       <p class="tema__nota">
         Los datos estructurados hacen a la página elegible para resultados más completos; Google decide si los
         muestra. Para aparecer en Maps lo que cuenta es el Perfil de Empresa de Google (parte 2).
       </p>
       <div class="vivo">
-        <span class="vivo__etiqueta">En vivo · JSON-LD de la página principal</span>
+        <span class="vivo__etiqueta">En vivo · JSON-LD de la portada</span>
         <pre data-vivo="jsonld">Cargando…</pre>
+      </div>
+      <div class="vivo">
+        <span class="vivo__etiqueta vivo__etiqueta--fijo">Ejemplo · LocalBusiness de un negocio</span>
+        <pre>{JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'Bakery',
+          name: 'Panadería de ejemplo',
+          telephone: '+57 300 000 0000',
+          address: { '@type': 'PostalAddress', streetAddress: 'Calle 00 # 00-00', addressLocality: 'Bogotá', addressCountry: 'CO' },
+          openingHours: 'Mo-Sa 06:00-20:00',
+        }, null, 2)}</pre>
       </div>
       <div class="tema__acciones">
         <a class="boton boton--oscuro" href={pruebas.ricos} target="_blank" rel="noopener" data-evento="abrir_herramienta" data-evento-seccion="resultados_enriquecidos">Prueba de resultados enriquecidos</a>
@@ -214,26 +230,26 @@ const lista = [
         <li><code>manifest.webmanifest</code> con íconos de 192 y 512 px y <code>theme-color</code>: en Android, el color de la barra y el ícono de la app.</li>
       </ul>
       <div class="vivo">
-        <span class="vivo__etiqueta">En vivo · íconos declarados en la página principal</span>
+        <span class="vivo__etiqueta">En vivo · íconos declarados en la portada</span>
         <div class="iconos" data-vivo="iconos">Cargando…</div>
       </div>
     </section>
 
     <section class="tema" id="lighthouse">
       <span class="tema__numero">08</span>
-      <h2>Lighthouse y velocidad: 100 en las cuatro categorías</h2>
+      <h2>Lighthouse y velocidad: la nota de 0 a 100</h2>
       <p>
         Lighthouse es la auditoría de Google que viene en Chrome. Califica de 0 a 100 rendimiento, accesibilidad,
         buenas prácticas y SEO. Google además mide la experiencia real con las Core Web Vitals: cuánto tarda en
         verse lo principal (LCP), si la página salta mientras carga (CLS) y qué tan rápido responde a un toque (INP).
-        Este sitio sacó 100 en las cuatro categorías en móvil.
+        Este sitio está hecho para sacar 100 en las cuatro: pruébenlo en vivo.
       </p>
       <ol class="tema__lista">
         <li>En Chrome, abre el sitio en una ventana de incógnito (las extensiones bajan el puntaje).</li>
         <li>Clic derecho &gt; Inspeccionar &gt; pestaña <strong>Lighthouse</strong>.</li>
         <li>Elige <strong>Mobile</strong>, marca las cuatro categorías y pulsa <strong>Analyze page load</strong>.</li>
       </ol>
-      <p>Qué hicimos para llegar a 100:</p>
+      <p>Qué tiene este sitio para que la nota sea alta:</p>
       <ul class="tema__lista">
         <li>HTML estático: no hay servidor armando la página en cada visita.</li>
         <li>Imágenes en WebP, del tamaño justo y con ancho y alto fijos para que nada salte al cargar.</li>
@@ -242,8 +258,9 @@ const lista = [
       </ul>
       <p class="tema__nota">
         PageSpeed Insights corre la misma prueba desde los servidores de Google, así que el número puede variar unos
-        puntos entre una corrida y otra. Pruébenlo con la página principal: esta página de la clase tiene
-        <code>noindex</code> a propósito, y Lighthouse le baja la nota de SEO por eso.
+        puntos entre una corrida y otra. Si en el tema 03 aparece el encabezado <code>X-Robots-Tag: noindex</code>,
+        Lighthouse le baja la nota de SEO por eso: es justo lo que debe pasar con una página que no quiere salir en
+        Google.
       </p>
       <div class="tema__acciones">
         <a class="boton boton--oscuro" href={pruebas.pagespeed} target="_blank" rel="noopener" data-evento="abrir_herramienta" data-evento-seccion="pagespeed">Correr PageSpeed Insights</a>
@@ -258,7 +275,7 @@ const lista = [
         preparar la página para el celular.
       </p>
       <div class="vivo">
-        <span class="vivo__etiqueta">En vivo · revisión de la página principal</span>
+        <span class="vivo__etiqueta">En vivo · revisión de la portada</span>
         <ul class="revision" data-vivo="html"><li>Cargando…</li></ul>
       </div>
     </section>
@@ -289,16 +306,16 @@ const lista = [
       <span class="tema__numero">11</span>
       <h2>Search Console: la conversación directa con Google</h2>
       <p>
-        Es la herramienta gratuita de Google para el dueño del sitio. Primero se demuestra que el sitio es nuestro
-        (aquí con un archivo de verificación), luego se envía el sitemap y desde ahí se ve qué páginas están
-        indexadas y qué errores encontró Google. Su informe de rendimiento (búsquedas, apariciones y clics) se
-        usa en la parte 2.
+        Es la herramienta gratuita de Google para el dueño del sitio. Ahí se ve qué páginas están indexadas, qué
+        errores encontró Google y, en el informe de rendimiento, con qué búsquedas aparece el sitio (se usa en la
+        parte 2).
       </p>
-      <ul class="tema__lista">
-        <li>Verificación: archivo <a href="/google291f5c89723064e1.html" target="_blank" rel="noopener" data-evento="ver_archivo" data-evento-seccion="verificacion">google291f5c89723064e1.html</a> en la raíz.</li>
-        <li>Sitemap enviado desde Search Console.</li>
-        <li>Los datos tardan días en aparecer; un sitio nuevo no sale en Google de inmediato.</li>
-      </ul>
+      <ol class="tema__lista">
+        <li>Agregar la propiedad: el dominio completo o un prefijo de URL.</li>
+        <li>Demostrar que el sitio es tuyo: con un archivo HTML en la raíz, una etiqueta meta, Google Analytics o un registro DNS.</li>
+        <li>Enviar el sitemap: <code>/sitemap.xml</code>.</li>
+        <li>Esperar: los datos tardan días en aparecer y un sitio nuevo no sale en Google de inmediato.</li>
+      </ol>
       <div class="tema__acciones">
         <a class="boton sencilla__volver" href={pruebas.searchConsole} target="_blank" rel="noopener" data-evento="abrir_herramienta" data-evento-seccion="search_console">Abrir Search Console</a>
         <a class="boton sencilla__volver" href={pruebas.site} target="_blank" rel="noopener" data-evento="abrir_herramienta" data-evento-seccion="busqueda_site">Buscar site:{dominio}</a>
@@ -321,7 +338,7 @@ const lista = [
             <ul class="revision" data-vivo="medicion"><li>Cargando…</li></ul>
           </div>
           <div class="tema__acciones">
-            <a class="boton sencilla__volver" href="/politica-de-datos#cookies" data-cookies data-evento="cambiar_cookies" data-evento-seccion="tecnico">Cambiar mi respuesta de cookies</a>
+            <a class="boton sencilla__volver" href="/privacidad/#cookies" data-cookies data-evento="cambiar_cookies" data-evento-seccion="tecnico">Cambiar mi respuesta de cookies</a>
             <a class="boton sencilla__volver" href={pruebas.tagAssistant} target="_blank" rel="noopener" data-evento="abrir_herramienta" data-evento-seccion="tag_assistant">Tag Assistant</a>
           </div>
         </>
@@ -343,14 +360,14 @@ const lista = [
         ))}
       </ul>
       <div class="tema__acciones">
-        <a class="boton boton--oscuro" href="/clase-seo/contenido" data-evento="elegir_tema" data-evento-seccion="contenido">Seguir con la parte 2: contenido</a>
+        <a class="boton boton--oscuro" href="/contenido/" data-evento="elegir_tema" data-evento-seccion="contenido">Seguir con la parte 2: contenido</a>
       </div>
     </section>
   </article>
-</Sencilla>
+</Clase>
 
 <script>
-  import { medirFinal } from '../../scripts/clase';
+  import { medirFinal } from '../scripts/clase';
   medirFinal();
 
   const ponerTexto = (clave: string, texto: string) => {
@@ -365,6 +382,16 @@ const lista = [
   };
 
   const leerHtml = async (ruta: string) => new DOMParser().parseFromString(await leer(ruta), 'text/html');
+
+  // El noindex por encabezado HTTP no está en el HTML: se lee de la respuesta.
+  fetch('/', { method: 'HEAD', cache: 'no-store' })
+    .then((respuesta) => {
+      const valor = respuesta.headers.get('x-robots-tag');
+      ponerTexto('encabezado', valor
+        ? `Encabezado HTTP en esta dirección: X-Robots-Tag: ${valor}. Google no indexaría estas páginas aunque tengan canonical.`
+        : 'Encabezado HTTP: no llega X-Robots-Tag, así que manda lo que dice cada página.');
+    })
+    .catch(() => ponerTexto('encabezado', 'No se pudo leer el encabezado.'));
 
   const fila = (pagina: string, texto: string) => {
     const tr = document.createElement('tr');
@@ -393,8 +420,8 @@ const lista = [
   leer('/robots.txt').then((t) => ponerTexto('robots', t.trim())).catch(() => ponerTexto('robots', 'No se pudo leer.'));
   leer('/sitemap.xml').then((t) => ponerTexto('sitemap', t.trim())).catch(() => ponerTexto('sitemap', 'No se pudo leer.'));
 
-  const rutas = ['/', '/politica-de-datos', '/gracias', '/clase-seo/tecnico'];
-  Promise.all(rutas.map((ruta) => (ruta === '/clase-seo/tecnico' ? Promise.resolve(document) : leerHtml(ruta))))
+  const rutas = ['/', '/tecnico/', '/contenido/', '/privacidad/'];
+  Promise.all(rutas.map((ruta) => (ruta === '/tecnico/' ? Promise.resolve(document) : leerHtml(ruta))))
     .then((docs) => {
       const cuerpo = document.querySelector('[data-vivo="indexacion"]');
       cuerpo?.replaceChildren(...docs.map((doc, i) => fila(rutas[i], indexacion(doc))));
@@ -460,7 +487,7 @@ const lista = [
       );
     })
     .catch(() => {
-      for (const clave of ['og', 'jsonld', 'iconos']) ponerTexto(clave, 'No se pudo leer la página principal.');
+      for (const clave of ['og', 'jsonld', 'iconos']) ponerTexto(clave, 'No se pudo leer la portada.');
     });
 
   const medicion = document.querySelector('[data-vivo="medicion"]');

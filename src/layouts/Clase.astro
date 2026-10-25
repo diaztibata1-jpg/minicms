@@ -1,0 +1,72 @@
+---
+// Layout del sitio de la clase de SEO (rama clase-seo). El sitio es su propio ejemplo:
+// todo lo que la página técnica explica está en este <head>.
+import Medicion from '../components/Medicion.astro';
+import AvisoCookies from '../components/AvisoCookies.astro';
+import { GTM_ID } from '../medicion/config';
+import '../styles/global.css';
+import '../styles/clase.css';
+
+export const NOMBRE = 'Clase de SEO';
+
+interface Props {
+  titulo: string;
+  descripcion: string;
+  indexar?: boolean;
+  // Datos estructurados (JSON-LD) propios de la página.
+  datos?: Record<string, unknown>;
+}
+
+const { titulo, descripcion, indexar = true, datos } = Astro.props;
+const canonica = new URL(Astro.url.pathname, Astro.site).href;
+const imagen = new URL('/og.jpg', Astro.site).href;
+const ruta = Astro.url.pathname;
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{titulo}</title>
+    <Medicion />
+    <meta name="description" content={descripcion} />
+    <meta name="theme-color" content="#355d4a" />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    {indexar ? <link rel="canonical" href={canonica} /> : <meta name="robots" content="noindex, follow" />}
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="es_CO" />
+    <meta property="og:site_name" content={NOMBRE} />
+    <meta property="og:title" content={titulo} />
+    <meta property="og:description" content={descripcion} />
+    <meta property="og:url" content={canonica} />
+    <meta property="og:image" content={imagen} />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Clase de SEO: cómo un sitio le habla a Google" />
+    <meta name="twitter:card" content="summary_large_image" />
+    {datos && <script type="application/ld+json" set:html={JSON.stringify(datos).replace(/</g, '\\u003c')} />}
+  </head>
+  <body>
+    <header class="cabecera">
+      <a class="marca" href="/">{NOMBRE}</a>
+      <nav class="cabecera__menu" aria-label="Partes de la clase">
+        <a class="cabecera__enlace" href="/tecnico/" aria-current={ruta === '/tecnico/' ? 'page' : undefined} data-evento="elegir_tema" data-evento-seccion="tecnico">Técnico</a>
+        <a class="cabecera__enlace" href="/contenido/" aria-current={ruta === '/contenido/' ? 'page' : undefined} data-evento="elegir_tema" data-evento-seccion="contenido">Contenido</a>
+      </nav>
+    </header>
+    <main class="sencilla">
+      <slot />
+    </main>
+    <footer class="pie">
+      <span>{NOMBRE}</span>
+      <a href="/privacidad/">Privacidad</a>
+      {GTM_ID && <a href="/privacidad/#cookies" data-cookies>Cookies</a>}
+    </footer>
+    <AvisoCookies />
+  </body>
+</html>

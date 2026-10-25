@@ -1,9 +1,6 @@
 // Datos que usa Android al agregar la página a la pantalla de inicio: nombre, colores e íconos.
-import { getCollection } from 'astro:content';
-
 export async function GET() {
-  const [pagina] = await getCollection('paginas');
-  const nombre = pagina.data.negocio_nombre;
+  const nombre = 'Clase de SEO';
   const manifiesto = {
     name: nombre,
     short_name: nombre,

@@ -1,7 +1,63 @@
 ---
-import Pagina from '../components/Pagina.astro';
+// Portada de la clase de SEO. Es la página que analizan los bloques "En vivo" de la parte técnica.
+import Clase, { NOMBRE } from '../layouts/Clase.astro';
 
-const modoEdicion = import.meta.env.DEV && process.env.EDITOR === '1';
+const descripcion = 'Clase práctica de SEO en dos partes: lo técnico para que Google entre y entienda un sitio, y el contenido para aparecer en las búsquedas correctas.';
+const curso = {
+  '@context': 'https://schema.org',
+  '@type': 'Course',
+  name: 'Clase de SEO: técnico y contenido',
+  description: descripcion,
+  url: new URL('/', Astro.site).href,
+  inLanguage: 'es',
+  image: new URL('/og.jpg', Astro.site).href,
+  provider: { '@type': 'Organization', name: NOMBRE, url: new URL('/', Astro.site).href },
+  hasPart: [
+    { '@type': 'LearningResource', name: 'Parte 1: SEO técnico', url: new URL('/tecnico/', Astro.site).href },
+    { '@type': 'LearningResource', name: 'Parte 2: SEO de contenido', url: new URL('/contenido/', Astro.site).href },
+  ],
+};
 ---
 
-<Pagina edicion={modoEdicion ? 'local' : undefined} />
+<Clase titulo="Clase de SEO: técnico y contenido, con un sitio real" descripcion={descripcion} datos={curso}>
+  <article class="clase">
+    <span class="seccion__numero">Material de clase</span>
+    <h1>Cómo un sitio le habla a Google</h1>
+    <p class="clase__intro">
+      Este sitio es el ejemplo de la clase: todo lo que vamos a ver está aplicado aquí mismo, y lo vamos a revisar en
+      vivo. Tiene dos partes: lo técnico, que deja a Google entrar y entender, y el contenido, que decide con qué
+      búsquedas aparece.
+    </p>
+    <p class="clase__aviso">
+      <strong>Antes de empezar:</strong> acepten las cookies cuando salga el aviso. Así lo que hagan en estas páginas
+      queda medido y lo vemos en Google Analytics.
+    </p>
+
+    <div class="partes">
+      <a class="parte" href="/tecnico/" data-evento="elegir_tema" data-evento-seccion="tecnico">
+        <span class="seccion__numero">Parte 1</span>
+        <h2>SEO técnico</h2>
+        <ul>
+          <li>robots.txt, sitemap, canonical</li>
+          <li>Título, descripción y Open Graph</li>
+          <li>Datos estructurados y favicon</li>
+          <li>Lighthouse y SEO Site Checkup</li>
+          <li>Search Console y medición</li>
+        </ul>
+        <span class="parte__ir">Empezar →</span>
+      </a>
+      <a class="parte" href="/contenido/" data-evento="elegir_tema" data-evento-seccion="contenido">
+        <span class="seccion__numero">Parte 2</span>
+        <h2>SEO de contenido</h2>
+        <ul>
+          <li>Intención de búsqueda</li>
+          <li>Ubersuggest, Trends, Planificador</li>
+          <li>Competencia con Similarweb</li>
+          <li>Dónde van las palabras clave</li>
+          <li>SEO local y Perfil de Empresa</li>
+        </ul>
+        <span class="parte__ir">Empezar →</span>
+      </a>
+    </div>
+  </article>
+</Clase>

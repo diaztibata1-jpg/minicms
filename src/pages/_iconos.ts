@@ -2,7 +2,7 @@
 // (y el color de fondo de abajo, que es el del círculo del favicon).
 import sharp from 'sharp';
 
-export const FONDO_ICONO = '#cf6546';
+export const FONDO_ICONO = '#355d4a';
 
 // Ícono redondo con fondo transparente, para pestañas y favicon.ico.
 export const iconoRedondo = (lado: number) =>

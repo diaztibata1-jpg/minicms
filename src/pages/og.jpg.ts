@@ -1,8 +1,6 @@
-// Imagen para compartir (Open Graph), 1200×630. Se arma en cada build con el contenido del sitio,
-// así que si el cliente cambia el nombre, el título o la foto del hero desde el editor, la imagen se actualiza sola.
+// Imagen para compartir (Open Graph) del sitio de la clase, 1200×630. Se arma en cada build: solo texto y el ícono.
 import { readFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
-import { getCollection } from 'astro:content';
 import satori from 'satori';
 import sharp from 'sharp';
 
@@ -21,28 +19,22 @@ const h = (type: string, style: Record<string, unknown>, children?: unknown, ext
 });
 
 export async function GET() {
-  const [pagina] = await getCollection('paginas');
-  const contenido = pagina.data;
-  const foto = await sharp((contenido.hero_imagen as ImageMetadata & { fsPath: string }).fsPath)
-    .resize(560, ALTO, { fit: 'cover' })
-    .jpeg({ quality: 82 })
-    .toBuffer();
   const marca = await readFile('public/favicon.svg');
   const dominio = new URL(import.meta.env.SITE).host;
 
-  const lienzo = h('div', { display: 'flex', width: ANCHO, height: ALTO, background: COLORES.papel }, [
-    h('div', { display: 'flex', flexDirection: 'column', justifyContent: 'space-between', width: 640, padding: '64px 56px 56px 72px' }, [
-      h('div', { display: 'flex', alignItems: 'center', gap: 16 }, [
-        h('img', { width: 52, height: 52 }, undefined, { src: `data:image/svg+xml;base64,${marca.toString('base64')}`, width: 52, height: 52 }),
-        h('div', { color: COLORES.coral, fontFamily: 'Inter', fontSize: 22, fontWeight: 700, letterSpacing: 2.5, textTransform: 'uppercase' }, contenido.negocio_nombre),
-      ]),
-      h('div', { color: COLORES.tinta, fontFamily: 'Lora', fontSize: contenido.hero_titulo.length > 40 ? 58 : 68, fontWeight: 500, lineHeight: 1.08 }, contenido.hero_titulo),
-      h('div', { display: 'flex', alignItems: 'center', gap: 18, color: COLORES.gris, fontFamily: 'Inter', fontSize: 22 }, [
-        h('div', { width: 48, height: 3, background: COLORES.coral }),
-        dominio,
-      ]),
+  const lienzo = h('div', { display: 'flex', flexDirection: 'column', justifyContent: 'space-between', width: ANCHO, height: ALTO, padding: '72px 80px', background: COLORES.papel }, [
+    h('div', { display: 'flex', alignItems: 'center', gap: 18 }, [
+      h('img', { width: 60, height: 60 }, undefined, { src: `data:image/svg+xml;base64,${marca.toString('base64')}`, width: 60, height: 60 }),
+      h('div', { color: COLORES.coral, fontFamily: 'Inter', fontSize: 24, fontWeight: 700, letterSpacing: 2.5, textTransform: 'uppercase' }, 'Clase de SEO'),
     ]),
-    h('img', { width: 560, height: ALTO, objectFit: 'cover' }, undefined, { src: `data:image/jpeg;base64,${foto.toString('base64')}`, width: 560, height: ALTO }),
+    h('div', { display: 'flex', flexDirection: 'column', gap: 22 }, [
+      h('div', { color: COLORES.tinta, fontFamily: 'Lora', fontSize: 84, fontWeight: 500, lineHeight: 1.04 }, 'Cómo un sitio le habla a Google'),
+      h('div', { color: COLORES.gris, fontFamily: 'Inter', fontSize: 30 }, 'Parte 1: técnico · Parte 2: contenido'),
+    ]),
+    h('div', { display: 'flex', alignItems: 'center', gap: 18, color: COLORES.gris, fontFamily: 'Inter', fontSize: 22 }, [
+      h('div', { width: 48, height: 3, background: COLORES.coral }),
+      dominio,
+    ]),
   ]);
 
   const svg = await satori(lienzo as never, {

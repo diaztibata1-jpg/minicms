@@ -1,6 +1,5 @@
-// Páginas que Google debe conocer. Solo va lo indexable: gracias, 404, la política de datos (noindex) y el editor quedan fuera.
-// Si un sitio suma páginas propias (servicios, blog), se agregan a PAGINAS.
-const PAGINAS = ['/'];
+// Páginas de la clase que Google debe conocer. Privacidad y 404 llevan noindex y quedan fuera.
+const PAGINAS = ['/', '/tecnico/', '/contenido/'];
 
 export function GET() {
   const urls = PAGINAS.map((ruta) => `  <url><loc>${new URL(ruta, import.meta.env.SITE).href}</loc></url>`).join('\n');

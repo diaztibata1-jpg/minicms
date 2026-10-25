@@ -1,0 +1,4 @@
+# Las vistas previas de Cloudflare Pages agregan X-Robots-Tag: noindex. Se intenta quitar para que la clase pueda indexarse;
+# la página técnica muestra en vivo si el encabezado sigue llegando.
+/*
+  ! X-Robots-Tag

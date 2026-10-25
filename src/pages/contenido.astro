@@ -1,9 +1,7 @@
 ---
 // Clase de SEO, parte 2: SEO de contenido y herramientas para investigar palabras clave y competencia.
-// Mismo layout que la parte 1: noindex y fuera del sitemap.
 // Eventos de la clase (data-evento): ir_al_tema, abrir_herramienta, marcar_punto, cambiar_cookies, leer_completo.
-import Sencilla from '../../layouts/Sencilla.astro';
-import '../../styles/clase.css';
+import Clase from '../layouts/Clase.astro';
 
 const ejemplo = 'pan de masa madre bogota';
 const q = encodeURIComponent(ejemplo);
@@ -54,15 +52,15 @@ const lista = [
 ];
 ---
 
-<Sencilla titulo="Clase de SEO · Parte 2: contenido">
+<Clase titulo="SEO de contenido: palabras clave, competencia y SEO local · Clase de SEO" descripcion="Parte 2 de la clase de SEO: intención de búsqueda, palabras clave con Ubersuggest y Trends, competencia con Similarweb, SEO local y cómo medir.">
   <article class="clase">
-    <a class="clase__miga" href="/clase-seo">Clase de SEO</a>
+    <a class="clase__miga" href="/">Clase de SEO</a>
     <span class="seccion__numero">Parte 2 de 2 · SEO de contenido</span>
     <h1>Que el sitio responda lo que la gente busca</h1>
     <p class="clase__intro">
-      El <a href="/clase-seo/tecnico">SEO técnico</a> deja la puerta abierta. El de contenido decide con qué
+      El <a href="/tecnico/">SEO técnico</a> deja la puerta abierta. El de contenido decide con qué
       búsquedas aparece el sitio: qué palabras usa la gente, qué quiere encontrar y si la página se lo da mejor que
-      la competencia. El ejemplo es la misma panadería del sitio de prueba.
+      la competencia. Los ejemplos son de una panadería de barrio imaginaria.
     </p>
     <p class="clase__aviso">
       <strong>Ojo:</strong> las herramientas de palabras clave dan estimaciones, no cifras exactas. Para búsquedas
@@ -91,7 +89,7 @@ const lista = [
           <tr><td>Comercial</td><td>mejor pan de masa madre en Bogotá</td><td>Comparar opciones, reseñas, fotos.</td></tr>
           <tr><td>Transaccional</td><td>pedir pan de masa madre a domicilio</td><td>Precios y un botón para pedir.</td></tr>
           <tr><td>Local</td><td>panadería cerca de mí</td><td>El mapa con negocios cercanos (Perfil de Empresa, tema 06).</td></tr>
-          <tr><td>Navegacional</td><td>panadería la espiga</td><td>El sitio del negocio. Si no sale primero, algo está mal.</td></tr>
+          <tr><td>Navegacional</td><td>panadería el trigal</td><td>El sitio del negocio. Si no sale primero, algo está mal.</td></tr>
         </tbody>
       </table>
       <p class="tema__nota">Truco: busca la palabra en Google y mira qué sale arriba. Eso es lo que Google cree que la gente quiere.</p>
@@ -155,7 +153,7 @@ const lista = [
       <table class="ejemplo">
         <thead><tr><th>Dónde</th><th>Qué pesa</th><th>Ejemplo</th></tr></thead>
         <tbody>
-          <tr><td>Título (title)</td><td>Mucho</td><td>Pan de masa madre en San Miguel, Bogotá · La Espiga</td></tr>
+          <tr><td>Título (title)</td><td>Mucho</td><td>Pan de masa madre en San Miguel, Bogotá · El Trigal</td></tr>
           <tr><td>h1</td><td>Mucho</td><td>Pan de masa madre horneado cada mañana</td></tr>
           <tr><td>h2 de cada sección</td><td>Medio</td><td>Tortas por encargo · Domicilios en San Miguel</td></tr>
           <tr><td>URL</td><td>Poco, pero ayuda</td><td>/tortas-por-encargo</td></tr>
@@ -163,12 +161,12 @@ const lista = [
         </tbody>
       </table>
       <div class="vivo">
-        <span class="vivo__etiqueta">En vivo · títulos del sitio de ejemplo</span>
+        <span class="vivo__etiqueta">En vivo · títulos de la portada de este sitio</span>
         <ul class="revision" data-vivo="estructura"><li>Cargando…</li></ul>
       </div>
       <p class="tema__nota">
-        Ejercicio: ¿qué palabra clave pondrían en el título de este sitio? Hoy el título es solo el nombre del
-        negocio, que sirve para quien ya lo conoce pero no para quien busca "panadería en San Miguel".
+        Ejercicio: ¿con qué búsqueda debería aparecer la portada de esta clase? ¿Sus títulos usan esas palabras, o
+        las que usaría quien la escribió?
       </p>
     </section>
 
@@ -237,11 +235,11 @@ const lista = [
       </ul>
       <p>
         Los botones de esta clase envían eventos a Analytics. Si aceptaron las cookies, lo que hicieron hoy aquí
-        aparece en el informe mensual del sitio.
+        aparece en el informe del sitio.
       </p>
       <div class="tema__acciones">
         <a class="boton sencilla__volver" href="https://search.google.com/search-console" target="_blank" rel="noopener" data-evento="abrir_herramienta" data-evento-seccion="search_console">Abrir Search Console</a>
-        <a class="boton sencilla__volver" href="/politica-de-datos#cookies" data-cookies data-evento="cambiar_cookies" data-evento-seccion="contenido">Cambiar mi respuesta de cookies</a>
+        <a class="boton sencilla__volver" href="/privacidad/#cookies" data-cookies data-evento="cambiar_cookies" data-evento-seccion="contenido">Cambiar mi respuesta de cookies</a>
       </div>
     </section>
 
@@ -258,17 +256,17 @@ const lista = [
         ))}
       </ul>
       <div class="tema__acciones">
-        <a class="boton sencilla__volver" href="/clase-seo/tecnico" data-evento="elegir_tema" data-evento-seccion="tecnico">Volver a la parte 1: técnico</a>
+        <a class="boton sencilla__volver" href="/tecnico/" data-evento="elegir_tema" data-evento-seccion="tecnico">Volver a la parte 1: técnico</a>
       </div>
     </section>
   </article>
-</Sencilla>
+</Clase>
 
 <script>
-  import { medirFinal } from '../../scripts/clase';
+  import { medirFinal } from '../scripts/clase';
   medirFinal();
 
-  // Títulos de la página principal: el título, el h1 y los h2, como los lee Google.
+  // Títulos de la portada: el título, el h1 y los h2, como los lee Google.
   const caja = document.querySelector('[data-vivo="estructura"]');
   const punto = (etiqueta: string, texto: string) => {
     const li = document.createElement('li');
@@ -284,5 +282,5 @@ const lista = [
       const encabezados = [...doc.querySelectorAll('h1, h2')].map((h) => punto(h.tagName.toLowerCase(), h.textContent?.trim() ?? ''));
       caja?.replaceChildren(punto('title', doc.title), ...encabezados);
     })
-    .catch(() => caja?.replaceChildren(punto('—', 'No se pudo leer la página principal.')));
+    .catch(() => caja?.replaceChildren(punto('—', 'No se pudo leer la portada.')));
 </script>

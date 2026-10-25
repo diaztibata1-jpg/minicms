@@ -424,3 +424,21 @@
 .auditoria li {
   margin-bottom: 10px;
 }
+
+.cabecera__menu {
+  display: flex;
+  gap: 22px;
+}
+
+.cabecera__enlace[aria-current="page"] {
+  color: var(--coral-texto);
+  font-weight: 700;
+}
+
+.vivo__etiqueta--fijo::before {
+  background: var(--linea);
+}
+
+.vivo + .vivo {
+  margin-top: 12px;
+}

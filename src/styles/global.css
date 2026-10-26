@@ -193,10 +193,10 @@ h1 {
   stroke-linejoin: round;
 }
 
-/* Cursor de espiga solo con mouse; en pantallas táctiles no hay cursor. */
+/* Cursor de lupa solo con mouse; en pantallas táctiles no hay cursor. */
 @media (pointer: fine) {
   body {
-    cursor: url("/cursores/espiga.svg") 7 7, auto;
+    cursor: url("/cursores/lupa.svg") 12 12, auto;
   }
 
   a,
@@ -205,7 +205,7 @@ h1 {
   summary,
   [role="button"],
   input[type="checkbox"] {
-    cursor: url("/cursores/espiga-activa.svg") 7 7, pointer;
+    cursor: url("/cursores/lupa-activa.svg") 12 12, pointer;
   }
 
   input:not([type="checkbox"]),

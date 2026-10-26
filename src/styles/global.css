@@ -193,27 +193,6 @@ h1 {
   stroke-linejoin: round;
 }
 
-/* Cursor de lupa solo con mouse; en pantallas táctiles no hay cursor. */
-@media (pointer: fine) {
-  body {
-    cursor: url("/cursores/lupa.svg") 12 12, auto;
-  }
-
-  a,
-  button,
-  label,
-  summary,
-  [role="button"],
-  input[type="checkbox"] {
-    cursor: url("/cursores/lupa-activa.svg") 12 12, pointer;
-  }
-
-  input:not([type="checkbox"]),
-  textarea,
-  [contenteditable="true"] {
-    cursor: text;
-  }
-}
 
 .servicios {
   padding: 104px 10vw 112px;

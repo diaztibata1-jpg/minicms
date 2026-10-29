@@ -7,14 +7,18 @@ const activo = GTM_ID && !Astro.url.pathname.startsWith('/editar');
 ---
 
 {activo && (
-  <div class="cookies" data-aviso-cookies hidden role="region" aria-label="Aviso de cookies">
-    <p>
-      Usamos cookies para medir las visitas y mejorar esta página.{" "}
-      <a href="/privacidad/#cookies">Ver la política de cookies</a>
-    </p>
-    <div class="cookies__botones">
-      <button class="boton cookies__rechazar" type="button" data-cookies-respuesta="no">Rechazar</button>
-      <button class="boton boton--oscuro" type="button" data-cookies-respuesta="si">Aceptar</button>
+  <div class="cookies" data-aviso-cookies hidden>
+    <div class="cookies__caja" role="dialog" aria-modal="true" aria-labelledby="cookies-titulo">
+      <h2 id="cookies-titulo" class="cookies__titulo">Antes de empezar: acepta las cookies</h2>
+      <p>
+        Este sitio es el ejemplo de la clase. Si aceptas, lo que hagas aquí queda medido y lo vemos juntos en Google
+        Analytics.{" "}
+        <a href="/privacidad/#cookies">Ver la política de cookies</a>
+      </p>
+      <div class="cookies__botones">
+        <button class="boton boton--oscuro cookies__aceptar" type="button" data-cookies-respuesta="si">Aceptar cookies</button>
+        <button class="boton cookies__rechazar" type="button" data-cookies-respuesta="no">Rechazar</button>
+      </div>
     </div>
   </div>
 )}
@@ -24,7 +28,11 @@ const activo = GTM_ID && !Astro.url.pathname.startsWith('/editar');
   if (aviso) {
     let guardado: string | null = null;
     try { guardado = localStorage.getItem('cookies'); } catch {}
-    if (!guardado) aviso.hidden = false;
+    const abrir = () => {
+      aviso.hidden = false;
+      aviso.querySelector<HTMLButtonElement>('.cookies__aceptar')?.focus();
+    };
+    if (!guardado) abrir();
 
     aviso.querySelectorAll<HTMLButtonElement>('[data-cookies-respuesta]').forEach((boton) => {
       boton.addEventListener('click', () => {
@@ -48,7 +56,7 @@ const activo = GTM_ID && !Astro.url.pathname.startsWith('/editar');
     document.querySelectorAll('[data-cookies]').forEach((enlace) => {
       enlace.addEventListener('click', (evento) => {
         evento.preventDefault();
-        aviso.hidden = false;
+        abrir();
       });
     });
   }

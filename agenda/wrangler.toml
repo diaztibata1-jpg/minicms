@@ -1,0 +1,36 @@
+name = "agenda"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+
+# En minicms la agenda corre como Pages Function (functions/agenda/api). Este archivo
+# solo sirve para probarla en local con wrangler dev: http://localhost:8787/agenda/
+[assets]
+directory = "../public"
+binding = "ASSETS"
+
+[vars]
+NEGOCIO = "Barbería de prueba"
+# Celular de 10 dígitos para el botón de WhatsApp de la página pública.
+WHATSAPP = "3000000000"
+# Cada cuántos minutos empieza un horario posible.
+INTERVALO_MIN = "30"
+# Cuántos días hacia adelante muestra la página pública.
+DIAS_VISIBLES = "14"
+# Máximo de profesionales activos.
+MAX_PROFESIONALES = "3"
+
+# Copia diaria de la base a Google Drive a las 3 a. m. de Bogotá (8:00 UTC).
+[triggers]
+crons = ["0 8 * * *"]
+
+# Registros de errores visibles en el panel de Cloudflare (Workers > agenda > Logs).
+[observability]
+enabled = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "agenda"
+# Base D1 "agenda" de la cuenta de Cloudflare de minicms (en local se usa una copia en .wrangler).
+database_id = "7e9e61fd-5894-4357-a1b8-e934495a47ce"
+migrations_dir = "migraciones"
+

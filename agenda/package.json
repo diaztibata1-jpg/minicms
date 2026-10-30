@@ -1,0 +1,16 @@
+{
+  "name": "agenda",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "migrar:local": "wrangler d1 migrations apply agenda --local",
+    "semilla:local": "wrangler d1 execute agenda --local --file=semillas/ejemplo.sql",
+    "migrar:remoto": "wrangler d1 migrations apply agenda --remote",
+    "prueba": "node pruebas/humo.mjs",
+    "semilla:remoto": "wrangler d1 execute agenda --remote --file=semillas/ejemplo.sql"
+  },
+  "devDependencies": {
+    "wrangler": "4.155.0"
+  }
+}

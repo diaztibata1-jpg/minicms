@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Horarios disponibles</title>
+    <meta name="description" content="Consulta las horas libres y pide tu cita por WhatsApp." />
+    <link rel="stylesheet" href="/agenda/estilos.css" />
+    <script type="module" src="/agenda/publico.js"></script>
+  </head>
+  <body>
+    <main>
+      <h1 id="negocio">Horarios disponibles</h1>
+      <p class="suave">Elige el servicio, el día y la hora. La cita se confirma por WhatsApp.</p>
+
+      <p id="error" class="mensaje error" role="alert" hidden></p>
+
+      <h2>Servicio</h2>
+      <div id="servicios" class="opciones"></div>
+
+      <div id="bloque-profesionales" hidden>
+        <h2>Con quién</h2>
+        <div id="profesionales" class="opciones"></div>
+      </div>
+
+      <h2>Día</h2>
+      <div id="dias" class="opciones dias"></div>
+
+      <h2>Hora</h2>
+      <p id="estado-horas" class="suave" aria-live="polite">Elige un servicio y un día.</p>
+      <div id="horas" class="opciones horas"></div>
+
+      <div id="pedir" class="tarjeta pedido" hidden>
+        <p id="resumen"></p>
+        <a id="whatsapp" class="boton principal" target="_blank" rel="noopener">Pedir esta hora por WhatsApp</a>
+      </div>
+    </main>
+  </body>
+</html>

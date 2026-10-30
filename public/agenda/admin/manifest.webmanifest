@@ -1,0 +1,17 @@
+{
+  "name": "Agenda",
+  "short_name": "Agenda",
+  "description": "Citas, clientes y horario del negocio.",
+  "lang": "es-CO",
+  "start_url": "/agenda/admin/",
+  "scope": "/agenda/admin/",
+  "display": "standalone",
+  "background_color": "#f6f5f2",
+  "theme_color": "#1f5f4a",
+  "icons": [
+    { "src": "/agenda/admin/icono.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "/agenda/admin/icono-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/agenda/admin/icono-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/agenda/admin/icono-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

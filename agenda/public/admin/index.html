@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Agenda · Administración</title>
+    <meta name="theme-color" content="#1f5f4a" />
+    <link rel="manifest" href="/admin/manifest.webmanifest" />
+    <link rel="icon" href="/admin/icono.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/admin/icono-180.png" />
+    <meta name="apple-mobile-web-app-title" content="Agenda" />
+    <link rel="stylesheet" href="/estilos.css" />
+    <script type="module" src="/admin/admin.js"></script>
+  </head>
+  <body>
+    <main>
+      <section id="entrar" hidden>
+        <h1>Agenda</h1>
+        <p class="suave">Ingresa la contraseña del administrador.</p>
+        <form id="form-entrar" class="formulario tarjeta">
+          <label>Contraseña <input type="password" name="contrasena" autocomplete="current-password" required /></label>
+          <p id="error-entrar" class="mensaje error" role="alert" hidden></p>
+          <button class="boton principal">Entrar</button>
+        </form>
+      </section>
+
+      <section id="panel" hidden>
+        <div class="barra">
+          <h1>Agenda</h1>
+          <div class="fila">
+            <a class="boton chico" href="/" target="_blank" rel="noopener">Ver página pública</a>
+            <button id="salir" class="boton chico">Salir</button>
+          </div>
+        </div>
+
+        <nav class="pestanas" role="tablist">
+          <button role="tab" data-vista="agenda" aria-selected="true">Citas</button>
+          <button role="tab" data-vista="clientes" aria-selected="false">Clientes</button>
+          <button role="tab" data-vista="servicios" aria-selected="false">Servicios</button>
+          <button role="tab" data-vista="equipo" aria-selected="false">Equipo</button>
+          <button role="tab" data-vista="horario" aria-selected="false">Horario</button>
+          <button role="tab" data-vista="bloqueos" aria-selected="false">Bloqueos</button>
+          <button role="tab" data-vista="ajustes" aria-selected="false">Ajustes</button>
+        </nav>
+
+        <p id="sin-conexion" class="mensaje error" hidden>Sin conexión. Puedes ver la última información cargada, pero los cambios no se guardan hasta que vuelva internet.</p>
+
+        <p id="aviso" class="mensaje" role="status" hidden></p>
+
+        <!-- Citas del día -->
+        <section data-vista="agenda">
+          <div class="barra">
+            <div class="fila">
+              <button id="dia-anterior" class="boton chico" aria-label="Día anterior">‹</button>
+              <input id="dia" type="date" />
+              <button id="dia-siguiente" class="boton chico" aria-label="Día siguiente">›</button>
+              <button id="hoy" class="boton chico">Hoy</button>
+              <select id="filtro-profesional" class="selector" aria-label="Ver agenda de"></select>
+            </div>
+            <button id="nueva-cita" class="boton principal">Nueva cita</button>
+          </div>
+          <p id="titulo-dia" class="suave"></p>
+          <div id="citas" class="columnas"></div>
+        </section>
+
+        <!-- Clientes -->
+        <section data-vista="clientes" hidden>
+          <label>Buscar por nombre o celular <input id="buscar-cliente" type="search" /></label>
+          <ul id="clientes" class="lista"></ul>
+          <div id="detalle-cliente" class="tarjeta" hidden>
+            <form id="form-cliente" class="formulario">
+              <div class="dos">
+                <label>Nombre <input name="nombre" required maxlength="80" /></label>
+                <label>Celular <input name="celular" required inputmode="numeric" /></label>
+              </div>
+              <label>Notas <textarea name="notas" rows="2" maxlength="500"></textarea></label>
+              <div class="fila">
+                <button class="boton principal">Guardar cliente</button>
+                <button type="button" id="borrar-cliente" class="boton peligro">Borrar cliente y su historial</button>
+              </div>
+            </form>
+            <h2>Historial</h2>
+            <ul id="historial" class="lista"></ul>
+          </div>
+        </section>
+
+        <!-- Servicios -->
+        <section data-vista="servicios" hidden>
+          <ul id="servicios" class="lista"></ul>
+          <p><button id="nuevo-servicio" class="boton">Agregar servicio</button></p>
+        </section>
+
+        <!-- Equipo -->
+        <section data-vista="equipo" hidden>
+          <p id="limite-equipo" class="suave"></p>
+          <ul id="profesionales" class="lista"></ul>
+          <p><button id="nuevo-profesional" class="boton">Agregar profesional</button></p>
+        </section>
+
+        <!-- Horario -->
+        <section data-vista="horario" hidden>
+          <label class="selector-linea">Horario de <select id="horario-profesional" class="selector"></select></label>
+          <p class="suave">Agrega dos rangos en un día para dejar la pausa del almuerzo. Un día sin rangos queda cerrado.</p>
+          <div id="horario"></div>
+          <p><button id="guardar-horario" class="boton principal">Guardar horario</button></p>
+        </section>
+
+        <!-- Bloqueos -->
+        <section data-vista="bloqueos" hidden>
+          <p class="suave">Festivos, vacaciones o permisos. En esas horas la página pública no muestra horarios libres.</p>
+          <form id="form-bloqueo" class="formulario tarjeta">
+            <div class="dos">
+              <label>Desde <input name="inicio" type="datetime-local" required /></label>
+              <label>Hasta <input name="fin" type="datetime-local" required /></label>
+            </div>
+            <div class="dos">
+              <label>Para <select name="profesional_id" class="selector-bloqueo"></select></label>
+              <label>Motivo <input name="motivo" maxlength="120" placeholder="Festivo, vacaciones…" /></label>
+            </div>
+            <button class="boton principal">Agregar bloqueo</button>
+          </form>
+          <h2>Próximos bloqueos</h2>
+          <ul id="bloqueos" class="lista"></ul>
+        </section>
+
+        <!-- Ajustes -->
+        <section data-vista="ajustes" hidden>
+          <h2>Instalar en el celular</h2>
+          <div class="tarjeta">
+            <p id="instalada" hidden>La agenda ya está instalada en este dispositivo.</p>
+            <p id="instalar-android" hidden><button id="instalar" class="boton principal">Instalar la agenda</button></p>
+            <p id="instalar-iphone" class="suave">
+              En iPhone: abre esta página en Safari, toca Compartir y luego <strong>Agregar a inicio</strong>.
+              En Android: menú de Chrome y <strong>Instalar app</strong>.
+            </p>
+          </div>
+
+          <h2>Cambiar contraseña</h2>
+          <form id="form-contrasena" class="formulario tarjeta">
+            <label>Contraseña actual <input name="actual" type="password" autocomplete="current-password" required /></label>
+            <div class="dos">
+              <label>Nueva (12 caracteres o más) <input name="nueva" type="password" autocomplete="new-password" minlength="12" required /></label>
+              <label>Repite la nueva <input name="repetida" type="password" autocomplete="new-password" minlength="12" required /></label>
+            </div>
+            <p class="suave">Al cambiarla se cierran las sesiones abiertas en otros dispositivos.</p>
+            <button class="boton principal">Cambiar contraseña</button>
+          </form>
+
+          <h2>Respaldo</h2>
+          <div class="tarjeta formulario">
+            <p class="suave">Descarga una copia de todas las citas, clientes, servicios y horario. Si está configurado, cada noche también se guarda una copia en Google Drive.</p>
+            <p><a class="boton" href="/api/admin/respaldo" download>Descargar respaldo</a></p>
+            <label>Restaurar desde un archivo <input id="archivo-respaldo" type="file" accept="application/json,.json" /></label>
+            <p class="suave">Restaurar reemplaza todo lo que hay ahora por el contenido del archivo.</p>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <dialog id="dialogo-cita">
+      <form id="form-cita" class="formulario" method="dialog">
+        <h2 id="titulo-cita">Nueva cita</h2>
+        <div class="dos">
+          <label>Celular <input name="celular" required inputmode="numeric" autocomplete="off" /></label>
+          <label>Nombre <input name="nombre" required maxlength="80" autocomplete="off" /></label>
+        </div>
+        <p id="cliente-encontrado" class="suave" hidden></p>
+        <div class="dos">
+          <label>Servicio <select name="servicio_id" required></select></label>
+          <label>Con <select name="profesional_id" required></select></label>
+        </div>
+        <div class="dos">
+          <label>Fecha <input name="fecha" type="date" required /></label>
+          <label>Hora <input name="hora" type="time" step="300" required list="horas-libres" /></label>
+        </div>
+        <datalist id="horas-libres"></datalist>
+        <p id="sugerencias" class="suave"></p>
+        <div class="dos">
+          <label>Duración (min, opcional) <input name="duracion_min" type="number" min="5" max="480" /></label>
+          <label>Estado
+            <select name="estado">
+              <option value="confirmada">Confirmada</option>
+              <option value="atendida">Atendida</option>
+              <option value="no_asistio">No asistió</option>
+              <option value="cancelada">Cancelada</option>
+            </select>
+          </label>
+        </div>
+        <label>Notas <textarea name="notas" rows="2" maxlength="500"></textarea></label>
+        <p id="error-cita" class="mensaje error" role="alert" hidden></p>
+        <div class="fila">
+          <button class="boton principal" value="guardar">Guardar</button>
+          <button type="button" id="cancelar-cita" class="boton">Cerrar</button>
+        </div>
+      </form>
+    </dialog>
+  </body>
+</html>

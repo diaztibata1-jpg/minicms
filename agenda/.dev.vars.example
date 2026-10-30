@@ -1,0 +1,6 @@
+# Copia este archivo como .dev.vars. En producción cada valor va con: wrangler secret put NOMBRE
+# Contraseña inicial del panel. El dueño la puede cambiar desde Ajustes.
+ADMIN_PASSWORD=cambia-esta-clave-larga
+# Opcional: Apps Script de integraciones/apps-script.gs (avisos de error y respaldo diario en Drive).
+# GOOGLE_SCRIPT_URL=https://script.google.com/macros/s/.../exec
+# GOOGLE_SCRIPT_CLAVE=texto-largo-al-azar

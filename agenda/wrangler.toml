@@ -2,8 +2,10 @@ name = "agenda"
 main = "src/index.js"
 compatibility_date = "2026-10-01"
 
+# En minicms la agenda corre como Pages Function (functions/agenda/api). Este archivo
+# solo sirve para probarla en local con wrangler dev: http://localhost:8787/agenda/
 [assets]
-directory = "./public"
+directory = "../public"
 binding = "ASSETS"
 
 [vars]
@@ -32,23 +34,3 @@ database_name = "agenda"
 database_id = "00000000-0000-0000-0000-000000000000"
 migrations_dir = "migraciones"
 
-# Demo pública con datos de ejemplo y SIN contraseña: npm run demo:desplegar.
-# Nunca cargar datos reales aquí; cualquiera con el link entra al panel.
-[env.demo]
-name = "agenda-demo"
-triggers = { crons = [] }
-
-[env.demo.vars]
-NEGOCIO = "Barbería de prueba"
-WHATSAPP = "3000000000"
-INTERVALO_MIN = "30"
-DIAS_VISIBLES = "14"
-MAX_PROFESIONALES = "3"
-SIN_CONTRASENA = "1"
-
-[[env.demo.d1_databases]]
-binding = "DB"
-database_name = "agenda-demo"
-# wrangler d1 create agenda-demo y pega aquí el id.
-database_id = "00000000-0000-0000-0000-000000000000"
-migrations_dir = "migraciones"

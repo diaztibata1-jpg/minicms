@@ -29,7 +29,7 @@ class NoAutorizado extends Error {}
 async function api(metodo, ruta, cuerpo) {
   let respuesta;
   try {
-    respuesta = await fetch(`/api/admin/${ruta}`, {
+    respuesta = await fetch(`/agenda/api/admin/${ruta}`, {
       method: metodo,
       headers: cuerpo ? { 'content-type': 'application/json' } : {},
       body: cuerpo ? JSON.stringify(cuerpo) : undefined,
@@ -712,7 +712,7 @@ $('instalar').addEventListener('click', async () => {
 });
 cargadores.ajustes = pintarInstalacion;
 
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('/admin/sw.js', { scope: '/admin/' }).catch(() => {});
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('/agenda/admin/sw.js', { scope: '/agenda/admin/' }).catch(() => {});
 
 const pintarConexion = () => ($('sin-conexion').hidden = navigator.onLine);
 addEventListener('online', pintarConexion);
@@ -735,6 +735,16 @@ async function iniciar() {
   $('entrar').hidden = true;
   $('panel').hidden = false;
   abrirVista('agenda');
+  pintarDemo();
+}
+
+// Demo sin contraseña: no hay sesión que cerrar ni contraseña que cambiar.
+async function pintarDemo() {
+  const info = await fetch('/agenda/api/publico/info').then((r) => r.json()).catch(() => ({}));
+  if (!info.demo) return;
+  $('demo').hidden = false;
+  $('salir').hidden = true;
+  $('ajustes-contrasena').hidden = true;
 }
 
 iniciar();

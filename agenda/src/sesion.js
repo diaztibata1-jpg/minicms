@@ -64,7 +64,7 @@ function leerCookie(request) {
 }
 
 const cookie = (valor, maxAge, segura) =>
-  `${nombreCookie}=${valor}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${maxAge}${segura ? '; Secure' : ''}`;
+  `${nombreCookie}=${valor}; Path=/agenda/; HttpOnly; SameSite=Strict; Max-Age=${maxAge}${segura ? '; Secure' : ''}`;
 
 const esSegura = (request) => new URL(request.url).protocol === 'https:';
 

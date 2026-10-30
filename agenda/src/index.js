@@ -5,6 +5,9 @@ import { crearRespaldo, nombreRespaldo, restaurarRespaldo } from './respaldo.js'
 import { cambiarContrasena, cerrarSesion, exigirSesion, iniciarSesion, sinContrasena } from './sesion.js';
 import { ErrorApi, ahoraBogota, diaSemana, entero, json, leerJson, sumarDias, validarFecha } from './util.js';
 
+// En minicms la agenda vive bajo /agenda/ (página pública, panel y API).
+const prefijoApi = '/agenda/api/';
+
 const diasVisibles = (env) => Math.min(Number(env.DIAS_VISIBLES) || 14, 60);
 
 // Datos para la página pública: nunca incluye nombres ni celulares de clientes.
@@ -26,6 +29,7 @@ async function infoPublica(env) {
   }
   return json({
     negocio: env.NEGOCIO || '',
+    demo: sinContrasena(env),
     whatsapp: env.WHATSAPP || '',
     servicios: servicios.results,
     profesionales: profesionales.results,
@@ -55,7 +59,7 @@ async function disponibilidadPublica(env, url) {
 }
 
 async function manejarApi(request, env, url) {
-  const ruta = url.pathname.replace(/^\/api\//, '');
+  const ruta = url.pathname.slice(prefijoApi.length);
 
   if (ruta === 'publico/info' && request.method === 'GET') return infoPublica(env);
   if (ruta === 'publico/disponibilidad' && request.method === 'GET') return disponibilidadPublica(env, url);
@@ -106,7 +110,7 @@ export default {
 
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
-    if (!url.pathname.startsWith('/api/')) return env.ASSETS ? env.ASSETS.fetch(request) : new Response('', { status: 404 });
+    if (!url.pathname.startsWith(prefijoApi)) return env.ASSETS ? env.ASSETS.fetch(request) : new Response('', { status: 404 });
     try {
       // Los cambios solo se aceptan desde el mismo sitio.
       const origen = request.headers.get('origin');

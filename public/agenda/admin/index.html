@@ -6,12 +6,12 @@
     <meta name="robots" content="noindex, nofollow" />
     <title>Agenda · Administración</title>
     <meta name="theme-color" content="#1f5f4a" />
-    <link rel="manifest" href="/admin/manifest.webmanifest" />
-    <link rel="icon" href="/admin/icono.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="/admin/icono-180.png" />
+    <link rel="manifest" href="/agenda/admin/manifest.webmanifest" />
+    <link rel="icon" href="/agenda/admin/icono.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/agenda/admin/icono-180.png" />
     <meta name="apple-mobile-web-app-title" content="Agenda" />
-    <link rel="stylesheet" href="/estilos.css" />
-    <script type="module" src="/admin/admin.js"></script>
+    <link rel="stylesheet" href="/agenda/estilos.css" />
+    <script type="module" src="/agenda/admin/admin.js"></script>
   </head>
   <body>
     <main>
@@ -29,7 +29,7 @@
         <div class="barra">
           <h1>Agenda</h1>
           <div class="fila">
-            <a class="boton chico" href="/" target="_blank" rel="noopener">Ver página pública</a>
+            <a class="boton chico" href="/agenda/" target="_blank" rel="noopener">Ver página pública</a>
             <button id="salir" class="boton chico">Salir</button>
           </div>
         </div>
@@ -43,6 +43,8 @@
           <button role="tab" data-vista="bloqueos" aria-selected="false">Bloqueos</button>
           <button role="tab" data-vista="ajustes" aria-selected="false">Ajustes</button>
         </nav>
+
+        <p id="demo" class="mensaje" hidden>Demo sin contraseña: cualquiera con el link puede ver y cambiar estos datos. Usa solo datos de ejemplo.</p>
 
         <p id="sin-conexion" class="mensaje error" hidden>Sin conexión. Puedes ver la última información cargada, pero los cambios no se guardan hasta que vuelva internet.</p>
 
@@ -136,6 +138,7 @@
             </p>
           </div>
 
+          <div id="ajustes-contrasena">
           <h2>Cambiar contraseña</h2>
           <form id="form-contrasena" class="formulario tarjeta">
             <label>Contraseña actual <input name="actual" type="password" autocomplete="current-password" required /></label>
@@ -146,11 +149,12 @@
             <p class="suave">Al cambiarla se cierran las sesiones abiertas en otros dispositivos.</p>
             <button class="boton principal">Cambiar contraseña</button>
           </form>
+          </div>
 
           <h2>Respaldo</h2>
           <div class="tarjeta formulario">
             <p class="suave">Descarga una copia de todas las citas, clientes, servicios y horario. Si está configurado, cada noche también se guarda una copia en Google Drive.</p>
-            <p><a class="boton" href="/api/admin/respaldo" download>Descargar respaldo</a></p>
+            <p><a class="boton" href="/agenda/api/admin/respaldo" download>Descargar respaldo</a></p>
             <label>Restaurar desde un archivo <input id="archivo-respaldo" type="file" accept="application/json,.json" /></label>
             <p class="suave">Restaurar reemplaza todo lo que hay ahora por el contenido del archivo.</p>
           </div>

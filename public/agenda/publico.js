@@ -93,7 +93,7 @@ async function cargarHoras() {
   $('estado-horas').textContent = 'Buscando horas libres…';
   try {
     const con = estado.profesional ? `&profesional=${estado.profesional.id}` : '';
-    const { horas } = await pedir(`/api/publico/disponibilidad?fecha=${estado.fecha}&servicio=${estado.servicio.id}${con}`);
+    const { horas } = await pedir(`/agenda/api/publico/disponibilidad?fecha=${estado.fecha}&servicio=${estado.servicio.id}${con}`);
     const siguiente = estado.info.fechas[estado.info.fechas.indexOf(estado.fecha) + 1];
     if (!horas.length && saltarDiasVacios && siguiente) {
       estado.fecha = siguiente;
@@ -119,7 +119,7 @@ async function cargarHoras() {
 }
 
 try {
-  estado.info = await pedir('/api/publico/info');
+  estado.info = await pedir('/agenda/api/publico/info');
   if (estado.info.negocio) {
     $('negocio').textContent = estado.info.negocio;
     document.title = `Horarios disponibles · ${estado.info.negocio}`;

@@ -30,7 +30,7 @@ enabled = true
 [[d1_databases]]
 binding = "DB"
 database_name = "agenda"
-# En local no importa. Para publicar: wrangler d1 create agenda y pega aquí el id.
-database_id = "00000000-0000-0000-0000-000000000000"
+# Base D1 "agenda" de la cuenta de Cloudflare de minicms (en local se usa una copia en .wrangler).
+database_id = "7e9e61fd-5894-4357-a1b8-e934495a47ce"
 migrations_dir = "migraciones"
 

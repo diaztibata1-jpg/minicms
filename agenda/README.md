@@ -4,9 +4,18 @@ Prototipo de agenda para negocios de 1 a 3 profesionales (barbería, uñas, cons
 
 Corre en Cloudflare Workers con una base D1 (SQLite). En local todo funciona con Wrangler, sin cuenta de Cloudflare.
 
+## Dónde vive en minicms
+
+- Página pública: `public/agenda/` → `/agenda/`
+- Panel: `public/agenda/admin/` → `/agenda/admin/`
+- API: `functions/agenda/api/[[ruta]].js` (Pages Function) → `/agenda/api/*`, que usa el código de `agenda/src/`.
+- Base: D1 `agenda`, enlazada en Cloudflare Pages > minicms > Settings > Bindings con el nombre `DB`.
+
+**Por ahora es una demo SIN contraseña** (`SIN_CONTRASENA` en la Pages Function): cualquiera con el link entra al panel. Solo datos de ejemplo. Para pedir contraseña, quita esa línea y define `ADMIN_PASSWORD` en las variables del proyecto.
+
 ## Correr en local
 
-Necesitas Node 20 o superior.
+Necesitas Node 20 o superior. Desde esta carpeta:
 
 ```sh
 npm install
@@ -16,12 +25,10 @@ npm run semilla:local               # servicios y horario de ejemplo (opcional)
 npm run dev
 ```
 
-- Página pública: http://localhost:8787
-- Panel: http://localhost:8787/admin/
+- Página pública: http://localhost:8787/agenda/
+- Panel: http://localhost:8787/agenda/admin/ (en local sí pide contraseña)
 
-La base local queda en `.wrangler/state/`. Si la borras, vuelve a correr `migrar:local`.
-
-Prueba rápida de la API (con `npm run dev` corriendo en otra terminal): `npm run prueba`. Crea y borra datos de prueba en la base local.
+La base local queda en `.wrangler/state/`. Prueba rápida de la API (con `npm run dev` corriendo): `npm run prueba`.
 
 ## Qué hace
 
@@ -71,24 +78,10 @@ Las tablas están en `migraciones/`: `profesionales`, `servicios`, `horario`, `b
 
 En local se prueba el respaldo con `npx wrangler dev --test-scheduled` y abriendo http://localhost:8787/__scheduled
 
-## Publicar (cuando haya un cliente)
+## Cambios en la base
 
-1. `npx wrangler login` con la cuenta de Cloudflare del cliente.
-2. `npx wrangler d1 create agenda` y copia el `database_id` en `wrangler.toml`.
-3. `npm run migrar:remoto`
-4. `npx wrangler secret put ADMIN_PASSWORD`
-5. `npm run desplegar`
-
-## Demo sin contraseña (solo datos de ejemplo)
-
-`SIN_CONTRASENA = "1"` (ya puesto en `[env.demo]` de `wrangler.toml`) deja el panel abierto: cualquiera con el link ve, crea y borra citas y clientes. En la demo no se puede cambiar la contraseña ni restaurar respaldos, y no corre el respaldo nocturno. **Nunca cargues datos reales ahí.**
-
-1. `npx wrangler login`
-2. `npx wrangler d1 create agenda-demo` y copia el `database_id` en la sección `[[env.demo.d1_databases]]` de `wrangler.toml`.
-3. `npm run demo:migrar` y `npm run demo:semilla`
-4. `npm run demo:desplegar`. Queda en `https://agenda-demo.<tu-subdominio>.workers.dev` (panel en `/admin/`).
-
-Para quitar la demo: Cloudflare > Workers > agenda-demo > Settings > Delete, y `npx wrangler d1 delete agenda-demo`.
+Una migración nueva en `migraciones/` se aplica con `npm run migrar:remoto` (requiere `npx wrangler login`).
+Sin cron en Pages: el respaldo nocturno a Drive no corre en esta versión; usa el botón de Ajustes (desactivado en la demo).
 
 ## Pendiente antes de un cliente real
 

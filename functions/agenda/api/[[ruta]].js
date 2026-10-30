@@ -3,9 +3,8 @@
 // En Cloudflare Pages (Settings > Bindings) hay que enlazar una base D1 con el nombre DB.
 // Variables opcionales: AGENDA_NEGOCIO, AGENDA_WHATSAPP (10 dígitos).
 //
-// DEMO: el panel queda SIN contraseña. Solo para datos de ejemplo; cualquiera con el link
-// puede ver y cambiar citas y clientes. Para pedir contraseña, quita SIN_CONTRASENA y
-// define ADMIN_PASSWORD (12 caracteres o más) en las variables del proyecto.
+// Contraseña del panel: AGENDA_PASSWORD (secreto, 12 caracteres o más) en las variables del proyecto.
+// Si el dueño la cambia en Ajustes, queda guardada con hash en la base y AGENDA_PASSWORD deja de servir.
 import agenda from '../../../agenda/src/index.js';
 
 export function onRequest({ request, env, waitUntil }) {
@@ -19,7 +18,7 @@ export function onRequest({ request, env, waitUntil }) {
     INTERVALO_MIN: '30',
     DIAS_VISIBLES: '14',
     MAX_PROFESIONALES: '3',
-    SIN_CONTRASENA: '1',
+    ADMIN_PASSWORD: env.AGENDA_PASSWORD,
   };
   return agenda.fetch(request, entorno, { waitUntil });
 }

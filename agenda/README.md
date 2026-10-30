@@ -11,7 +11,8 @@ Corre en Cloudflare Workers con una base D1 (SQLite). En local todo funciona con
 - API: `functions/agenda/api/[[ruta]].js` (Pages Function) → `/agenda/api/*`, que usa el código de `agenda/src/`.
 - Base: D1 `agenda`, enlazada en Cloudflare Pages > minicms > Settings > Bindings con el nombre `DB`.
 
-**Por ahora es una demo SIN contraseña** (`SIN_CONTRASENA` en la Pages Function): cualquiera con el link entra al panel. Solo datos de ejemplo. Para pedir contraseña, quita esa línea y define `ADMIN_PASSWORD` en las variables del proyecto.
+- Contraseña del panel: secreto `AGENDA_PASSWORD` (12 caracteres o más) en Cloudflare Pages > minicms > Settings > Variables and secrets. Si falta, el panel responde "Falta configurar ADMIN_PASSWORD".
+- `SIN_CONTRASENA = "1"` (solo en el código, para demos) deja el panel abierto; hoy no se usa.
 
 ## Correr en local
 

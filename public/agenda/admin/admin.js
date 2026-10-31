@@ -1,3 +1,5 @@
+import { llamar, usaSheets } from '/agenda/conexion.js';
+
 const $ = (id) => document.getElementById(id);
 const pesos = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 });
 const formatoDia = new Intl.DateTimeFormat('es-CO', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
@@ -29,20 +31,16 @@ class NoAutorizado extends Error {}
 async function api(metodo, ruta, cuerpo) {
   let respuesta;
   try {
-    respuesta = await fetch(`/agenda/api/admin/${ruta}`, {
-      method: metodo,
-      headers: cuerpo ? { 'content-type': 'application/json' } : {},
-      body: cuerpo ? JSON.stringify(cuerpo) : undefined,
-    });
+    respuesta = await llamar(metodo, `admin/${ruta}`, cuerpo);
   } catch {
     throw new Error('No hay conexión. Revisa el internet e intenta de nuevo.');
   }
-  const datos = await respuesta.json().catch(() => ({}));
-  if (respuesta.status === 401 && ruta !== 'entrar') {
+  const { estado, datos } = respuesta;
+  if (estado === 401 && ruta !== 'entrar') {
     mostrarEntrar();
     throw new NoAutorizado();
   }
-  if (!respuesta.ok) throw new Error(datos.error || 'Algo salió mal.');
+  if (estado < 200 || estado >= 300) throw new Error(datos.error || 'Algo salió mal.');
   return datos;
 }
 
@@ -665,7 +663,7 @@ $('form-contrasena').addEventListener(
   }),
 );
 
-$('archivo-respaldo').addEventListener(
+$('archivo-respaldo')?.addEventListener(
   'change',
   intentar(async (evento) => {
     const archivo = evento.target.files[0];
@@ -712,7 +710,8 @@ $('instalar').addEventListener('click', async () => {
 });
 cargadores.ajustes = pintarInstalacion;
 
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('/agenda/admin/sw.js', { scope: '/agenda/admin/' }).catch(() => {});
+// La copia sin internet solo cubre la versión Cloudflare.
+if (!usaSheets && 'serviceWorker' in navigator) navigator.serviceWorker.register('/agenda/admin/sw.js', { scope: '/agenda/admin/' }).catch(() => {});
 
 const pintarConexion = () => ($('sin-conexion').hidden = navigator.onLine);
 addEventListener('online', pintarConexion);
@@ -740,7 +739,7 @@ async function iniciar() {
 
 // Demo sin contraseña: no hay sesión que cerrar ni contraseña que cambiar.
 async function pintarDemo() {
-  const info = await fetch('/agenda/api/publico/info').then((r) => r.json()).catch(() => ({}));
+  const { datos: info } = await llamar('GET', 'publico/info').catch(() => ({ datos: {} }));
   if (!info.demo) return;
   $('demo').hidden = false;
   $('salir').hidden = true;

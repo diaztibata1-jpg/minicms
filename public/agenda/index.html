@@ -33,8 +33,15 @@
 
       <div id="pedir" class="tarjeta pedido" hidden>
         <p id="resumen"></p>
+        <form id="reservar" class="formulario" hidden>
+          <label>¿Ya eres cliente? Escribe tu celular y agenda de una vez
+            <input name="celular" inputmode="numeric" autocomplete="tel-national" required maxlength="15" placeholder="300 123 4567" />
+          </label>
+          <button class="boton principal">Agendar</button>
+        </form>
         <a id="whatsapp" class="boton principal" target="_blank" rel="noopener">Pedir esta hora por WhatsApp</a>
       </div>
+      <p id="resultado-reserva" class="mensaje" role="status" hidden></p>
     </main>
   </body>
 </html>

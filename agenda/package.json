@@ -8,7 +8,8 @@
     "semilla:local": "wrangler d1 execute agenda --local --file=semillas/ejemplo.sql",
     "migrar:remoto": "wrangler d1 migrations apply agenda --remote",
     "prueba": "node pruebas/humo.mjs",
-    "semilla:remoto": "wrangler d1 execute agenda --remote --file=semillas/ejemplo.sql"
+    "semilla:remoto": "wrangler d1 execute agenda --remote --file=semillas/ejemplo.sql",
+    "prueba:sheets": "node pruebas/humo-sheets.mjs"
   },
   "devDependencies": {
     "wrangler": "4.155.0"

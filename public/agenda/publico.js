@@ -1,3 +1,5 @@
+import { llamar, usaSheets } from '/agenda/conexion.js';
+
 const $ = (id) => document.getElementById(id);
 const pesos = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 });
 const formatoDia = new Intl.DateTimeFormat('es-CO', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' });
@@ -7,10 +9,9 @@ const aFecha = (texto) => new Date(`${texto}T00:00:00Z`);
 // profesional null = "cualquiera".
 const estado = { info: null, servicio: null, profesional: null, fecha: null, hora: null };
 
-async function pedir(url) {
-  const respuesta = await fetch(url);
-  const datos = await respuesta.json();
-  if (!respuesta.ok) throw new Error(datos.error || 'No se pudo cargar la información.');
+async function pedir(ruta) {
+  const { estado, datos } = await llamar('GET', ruta);
+  if (estado !== 200) throw new Error(datos.error || 'No se pudo cargar la información.');
   return datos;
 }
 
@@ -81,7 +82,44 @@ function pintarPedido() {
   $('resumen').textContent = `${servicio.nombre}${con}, ${cuando}.`;
   const texto = `Hola, quiero agendar ${servicio.nombre}${con} el ${cuando}. Mi nombre es `;
   $('whatsapp').href = `https://wa.me/57${info.whatsapp}?text=${encodeURIComponent(texto)}`;
+  $('reservar').hidden = !usaSheets;
+  $('whatsapp').classList.toggle('principal', !usaSheets);
+  $('resultado-reserva').hidden = true;
 }
+
+// Versión Sheets: un cliente que ya está registrado agenda solo con su celular.
+$('reservar').addEventListener('submit', async (evento) => {
+  evento.preventDefault();
+  const boton = evento.target.querySelector('button');
+  const resultado = $('resultado-reserva');
+  boton.disabled = true;
+  resultado.hidden = true;
+  try {
+    const { estado: codigo, datos } = await llamar('POST', 'publico/reservar', {
+      celular: evento.target.celular.value,
+      servicio: estado.servicio.id,
+      profesional: estado.profesional?.id || '',
+      fecha: estado.fecha,
+      hora: estado.hora,
+    });
+    resultado.classList.toggle('error', codigo !== 201);
+    if (codigo === 201) {
+      const { cita } = datos;
+      resultado.textContent = `Listo, ${cita.cliente}: quedó tu cita de ${cita.servicio} con ${cita.profesional}, ${formatoLargo.format(aFecha(cita.inicio.slice(0, 10)))} a las ${cita.inicio.slice(11)}.`;
+      evento.target.reset();
+      estado.hora = null;
+      cargarHoras();
+    } else {
+      resultado.textContent = datos.error || 'No se pudo agendar. Escríbenos por WhatsApp.';
+      if (codigo === 409) cargarHoras();
+    }
+  } catch {
+    resultado.classList.add('error');
+    resultado.textContent = 'No hay conexión. Intenta de nuevo o escríbenos por WhatsApp.';
+  }
+  resultado.hidden = false;
+  boton.disabled = false;
+});
 
 // Al abrir la página salta los días que ya no tienen horas (por ejemplo, hoy en la noche).
 let saltarDiasVacios = true;
@@ -93,7 +131,7 @@ async function cargarHoras() {
   $('estado-horas').textContent = 'Buscando horas libres…';
   try {
     const con = estado.profesional ? `&profesional=${estado.profesional.id}` : '';
-    const { horas } = await pedir(`/agenda/api/publico/disponibilidad?fecha=${estado.fecha}&servicio=${estado.servicio.id}${con}`);
+    const { horas } = await pedir(`publico/disponibilidad?fecha=${estado.fecha}&servicio=${estado.servicio.id}${con}`);
     const siguiente = estado.info.fechas[estado.info.fechas.indexOf(estado.fecha) + 1];
     if (!horas.length && saltarDiasVacios && siguiente) {
       estado.fecha = siguiente;
@@ -119,7 +157,7 @@ async function cargarHoras() {
 }
 
 try {
-  estado.info = await pedir('/agenda/api/publico/info');
+  estado.info = await pedir('publico/info');
   if (estado.info.negocio) {
     $('negocio').textContent = estado.info.negocio;
     document.title = `Horarios disponibles · ${estado.info.negocio}`;
